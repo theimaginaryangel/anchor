@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     const { data: document, error: dbError } = await supabase
       .from('documents')
       .insert({
-        title: fileName,
+        filename: fileName,
         s3_key: s3Key,
         uploaded_by: userId,
         status: 'processing'
