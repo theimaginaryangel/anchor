@@ -12,6 +12,9 @@
  * Dependencies: @supabase/supabase-js
  */
 
+import { supabase } from '@/lib/supabase';
+import { embedText } from '@/lib/embeddings/bedrock';
+
 export interface SearchResult {
   chunkId: string;
   documentId: string;
@@ -21,11 +24,35 @@ export interface SearchResult {
   similarity: number;
 }
 
-export async function searchChunks(
-  queryEmbedding: number[],
-  options?: { documentId?: string; topK?: number; threshold?: number }
+export async function searchDocuments(
+  query: string,
+  matchThreshold: number = 0.7,
+  matchCount: number = 5,
+  filterDocumentId?: string
 ): Promise<SearchResult[]> {
-  // Calls the match_chunks RPC function in Supabase.
-  // Implemented in Phase 4.
-  throw new Error('Not implemented — Phase 4');
+  // 1. Convert the user's query into a vector using AWS Bedrock
+  const queryEmbedding = await embedText(query);
+
+  // 2. Call the pgvector similarity search function in Supabase
+  const { data: chunks, error } = await supabase.rpc('match_chunks', {
+    query_embedding: JSON.stringify(queryEmbedding),
+    match_threshold: matchThreshold,
+    match_count: matchCount,
+    filter_document: filterDocumentId || null
+  });
+
+  if (error) {
+    console.error('Vector search failed:', error);
+    throw new Error('Failed to search documents');
+  }
+
+  // 3. Map the database results to our interface
+  return (chunks || []).map((chunk: any) => ({
+    chunkId: chunk.chunk_id,
+    documentId: chunk.document_id,
+    content: chunk.content,
+    pageNumber: chunk.page_number,
+    sectionHeading: chunk.section_heading,
+    similarity: chunk.similarity
+  }));
 }

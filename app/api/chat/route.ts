@@ -1,27 +1,48 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { canQuery } from '@/lib/auth/roles';
+import { searchDocuments } from '@/lib/retrieval/search';
+import { generateAnswer } from '@/lib/chat/gemini';
 
-/**
- * POST /api/chat
- * RAG query: takes a question, retrieves relevant chunks,
- * generates an answer with citations.
- * Auth: admin and viewer.
- * Implemented in Phase 5.
- */
-export async function POST() {
-  const session = await auth();
-  
-  if (!session) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  }
-  
-  if (!canQuery(session.user?.role)) {
-    return NextResponse.json({ error: 'Not authorized to query documents' }, { status: 403 });
-  }
+export async function POST(req: Request) {
+  try {
+    // Auth check
+    const session = await auth();
+    if (!session || !canQuery((session?.user as any)?.role)) {
+      return NextResponse.json({ error: 'Not authorized to query documents' }, { status: 403 });
+    }
 
-  return NextResponse.json(
-    { error: 'Not implemented', phase: 'Phase 5 — RAG query and citations' },
-    { status: 501 }
-  );
+    const { question, documentId } = await req.json();
+
+    if (!question) {
+      return NextResponse.json({ error: 'Question is required' }, { status: 400 });
+    }
+
+    // 1. Vector Search
+    const searchResults = await searchDocuments(question, 0.5, 5, documentId);
+
+    if (searchResults.length === 0) {
+      return NextResponse.json({
+        answer: "I couldn't find any relevant information in the documents to answer your question.",
+        citations: []
+      });
+    }
+
+    // 2. Format chunks for Gemini
+    const chunksForGemini = searchResults.map(r => ({
+      id: r.chunkId,
+      content: r.content,
+      pageNumber: r.pageNumber,
+      sectionHeading: r.sectionHeading
+    }));
+
+    // 3. Generate Answer
+    const answer = await generateAnswer(question, chunksForGemini);
+
+    return NextResponse.json(answer);
+
+  } catch (error) {
+    console.error('Chat API Error:', error);
+    return NextResponse.json({ error: 'Failed to generate answer' }, { status: 500 });
+  }
 }
