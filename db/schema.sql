@@ -52,7 +52,7 @@ create table chunks (
 create table embeddings (
   id uuid primary key default gen_random_uuid(),
   chunk_id uuid not null references chunks(id) on delete cascade,
-  embedding vector(1536) not null,
+  embedding vector(768) not null,
   created_at timestamptz not null default now()
 );
 
@@ -77,7 +77,7 @@ create index idx_chunks_document_id
 --   match_count      — max number of results
 --   filter_document  — optional document ID to search within
 create or replace function match_chunks(
-  query_embedding vector(1536),
+  query_embedding vector(768),
   match_threshold float default 0.7,
   match_count int default 5,
   filter_document uuid default null

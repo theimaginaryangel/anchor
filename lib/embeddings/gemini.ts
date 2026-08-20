@@ -1,0 +1,22 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const model = genAI.getGenerativeModel({ model: 'text-embedding-004' });
+
+export async function embedText(text: string): Promise<number[]> {
+  const result = await model.embedContent(text);
+  return result.embedding.values;
+}
+
+export async function embedBatch(texts: string[]): Promise<number[][]> {
+  const embeddings: number[][] = [];
+  
+  // Gemini allows processing batches easily, but to keep it safe from 
+  // rate limits on massive documents, we process them in sequence.
+  for (const text of texts) {
+    const embedding = await embedText(text);
+    embeddings.push(embedding);
+  }
+  
+  return embeddings;
+}

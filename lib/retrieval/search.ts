@@ -13,7 +13,7 @@
  */
 
 import { supabase } from '@/lib/supabase';
-import { embedText } from '@/lib/embeddings/bedrock';
+import { embedText } from '@/lib/embeddings/gemini';
 
 export interface SearchResult {
   chunkId: string;

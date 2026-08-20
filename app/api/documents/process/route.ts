@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getTextractResult } from '@/lib/ocr/textract';
 import { chunkDocument } from '@/lib/chunking/chunker';
-import { embedBatch } from '@/lib/embeddings/bedrock';
+import { embedBatch } from '@/lib/embeddings/gemini';
 
 export async function POST() {
   try {
