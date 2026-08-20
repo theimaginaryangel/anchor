@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     branches: [main]
 
@@ -11,14 +11,15 @@ jobs:
     name: Lint, build, and deploy infra
     runs-on: ubuntu-latest
     
-    # Required to authenticate to AWS using OIDC or Secrets
     permissions:
       id-token: write
-      contents: read
+      contents: write # Needed to push to main
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for pushing to another branch
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -63,6 +64,13 @@ jobs:
 
       - name: Terraform Apply
         working-directory: ./infra/terraform
-        # Only deploy on main branch, not PRs
-        if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve
+
+      - name: Auto-merge to main on success
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git checkout main
+          git merge develop
+          git push origin main
