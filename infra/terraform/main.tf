@@ -8,14 +8,11 @@ terraform {
     }
   }
 
-  # Local state is fine for a portfolio project.
-  # To use S3 state (recommended for teams), uncomment and fill in:
-  #
-  # backend "s3" {
-  #   bucket = "your-terraform-state-bucket"
-  #   key    = "anchor/terraform.tfstate"
-  #   region = "us-east-1"
-  # }
+  backend "s3" {
+    bucket = "anchor-terraform-state-496795891920"
+    key    = "anchor/terraform.tfstate"
+    region = "us-east-1"
+  }
 }
 
 provider "aws" {

@@ -8,8 +8,13 @@ on:
 
 jobs:
   check:
-    name: Lint and type check
+    name: Lint, build, and deploy infra
     runs-on: ubuntu-latest
+    
+    # Required to authenticate to AWS using OIDC or Secrets
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout code
@@ -33,11 +38,31 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Build needs these to exist — values don't matter for a type/lint check
-          # Real values are only needed at runtime
           AUTH_MICROSOFT_ENTRA_ID_ID: ${{ secrets.AUTH_MICROSOFT_ENTRA_ID_ID }}
           AUTH_MICROSOFT_ENTRA_ID_SECRET: ${{ secrets.AUTH_MICROSOFT_ENTRA_ID_SECRET }}
           AUTH_MICROSOFT_ENTRA_ID_ISSUER: ${{ secrets.AUTH_MICROSOFT_ENTRA_ID_ISSUER }}
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Terraform Init
+        working-directory: ./infra/terraform
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ./infra/terraform
+        # Only deploy on main branch, not PRs
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve
