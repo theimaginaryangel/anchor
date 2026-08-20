@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "bucket_name" {
   description = "Name of the S3 bucket that stores uploaded documents"
   type        = string
-  default     = "anchor-documents"
+  default     = "anchor-documents-496795891920"
 }
 
 variable "app_name" {
