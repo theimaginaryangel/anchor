@@ -11,13 +11,41 @@
  * Dependencies: @aws-sdk/client-textract
  */
 
+import { TextractClient, StartDocumentTextDetectionCommand, GetDocumentTextDetectionCommand } from '@aws-sdk/client-textract';
+
+const textractClient = new TextractClient({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+  },
+});
+
 export async function startTextractJob(s3Key: string): Promise<string> {
-  // Returns a Textract job ID. Implemented in Phase 2.
-  throw new Error('Not implemented — Phase 2');
+  const bucketName = process.env.S3_BUCKET_NAME;
+  if (!bucketName) {
+    throw new Error('S3_BUCKET_NAME is not configured.');
+  }
+
+  const command = new StartDocumentTextDetectionCommand({
+    DocumentLocation: {
+      S3Object: {
+        Bucket: bucketName,
+        Name: s3Key,
+      }
+    }
+  });
+
+  const response = await textractClient.send(command);
+  
+  if (!response.JobId) {
+    throw new Error('Failed to retrieve JobId from Textract.');
+  }
+  
+  return response.JobId;
 }
 
 export async function getTextractResult(jobId: string): Promise<unknown> {
-  // Polls Textract until the job finishes, then returns the raw result.
-  // Implemented in Phase 2.
-  throw new Error('Not implemented — Phase 2');
+  const command = new GetDocumentTextDetectionCommand({ JobId: jobId });
+  return await textractClient.send(command);
 }
