@@ -4,7 +4,11 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({ model: 'gemini-embedding-2' });
 
 export async function embedText(text: string): Promise<number[]> {
-  const result = await model.embedContent(text);
+  const result = await model.embedContent({
+    content: { role: 'user', parts: [{ text }] },
+    taskType: 'RETRIEVAL_DOCUMENT',
+    outputDimensionality: 768
+  });
   return result.embedding.values;
 }
 
