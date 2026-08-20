@@ -1,0 +1,192 @@
+openapi: 3.0.3
+info:
+  title: Anchor API
+  description: |
+    API for Anchor, a document Q&A tool with source citations.
+    All endpoints require authentication via Microsoft Entra ID.
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+
+paths:
+  /upload:
+    post:
+      summary: Upload a document
+      description: |
+        Accepts a PDF file, stores it in S3, and starts a Textract OCR job.
+        Returns immediately with a document ID and processing status.
+        Auth: admin only.
+        Status: Not yet implemented (Phase 2).
+      tags: [Documents]
+      security:
+        - entraId: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF file to upload (max 50MB)
+              required:
+                - file
+      responses:
+        '202':
+          description: Document accepted for processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documentId:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum: [processing]
+        '400':
+          description: Invalid file (wrong format, too large)
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not authorized (viewer role cannot upload)
+        '501':
+          description: Not yet implemented
+
+  /documents:
+    get:
+      summary: List documents
+      description: |
+        Returns all documents the current user can access.
+        Auth: admin and viewer.
+        Status: Not yet implemented (Phase 2).
+      tags: [Documents]
+      security:
+        - entraId: []
+      responses:
+        '200':
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    filename:
+                      type: string
+                    status:
+                      type: string
+                      enum: [processing, ready, failed]
+                    pageCount:
+                      type: integer
+                    createdAt:
+                      type: string
+                      format: date-time
+        '401':
+          description: Not authenticated
+        '501':
+          description: Not yet implemented
+
+    delete:
+      summary: Delete a document
+      description: |
+        Deletes a document, its chunks, and its embeddings.
+        Also removes the file from S3.
+        Auth: admin only.
+        Status: Not yet implemented (Phase 2).
+      tags: [Documents]
+      security:
+        - entraId: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Document ID to delete
+      responses:
+        '200':
+          description: Document deleted
+        '401':
+          description: Not authenticated
+        '403':
+          description: Not authorized (viewer role cannot delete)
+        '404':
+          description: Document not found
+        '501':
+          description: Not yet implemented
+
+  /chat:
+    post:
+      summary: Ask a question
+      description: |
+        Takes a question, retrieves relevant chunks via similarity search,
+        and generates an answer with citations using Google Gemini.
+        Auth: admin and viewer.
+        Status: Not yet implemented (Phase 5).
+      tags: [Chat]
+      security:
+        - entraId: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  description: The question to ask
+                documentId:
+                  type: string
+                  format: uuid
+                  description: Optional — limit search to a specific document
+              required:
+                - question
+      responses:
+        '200':
+          description: Answer with citations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                  citations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        chunkId:
+                          type: string
+                          format: uuid
+                        pageNumber:
+                          type: integer
+                        sectionHeading:
+                          type: string
+                          nullable: true
+                        relevantText:
+                          type: string
+                          description: The passage that supports this part of the answer
+        '401':
+          description: Not authenticated
+        '501':
+          description: Not yet implemented
+
+components:
+  securitySchemes:
+    entraId:
+      type: openIdConnect
+      openIdConnectUrl: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
+      description: Microsoft Entra ID authentication
