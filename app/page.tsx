@@ -21,8 +21,28 @@ export default async function Home() {
           Enterprise document intelligence. Extract, vectorize, and semantically query your scanned archives with exact citations.
         </p>
 
+        {/* Tech Stack Showcase */}
+        <div className="py-8 flex flex-wrap justify-center gap-6 text-xs font-mono tracking-widest text-zinc-600 uppercase">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+            Microsoft Entra
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+            AWS Textract
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+            Supabase pgvector
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+            Google Gemini 3.5
+          </div>
+        </div>
+
         {/* CTA */}
-        <div className="pt-8">
+        <div className="pt-4">
           {session ? (
             <Link
               href="/dashboard"
