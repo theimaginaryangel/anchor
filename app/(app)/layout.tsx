@@ -29,8 +29,8 @@ export default async function AppLayout({
         </nav>
 
         {session?.user && (
-          <div className="p-8 border-t border-zinc-800 flex flex-col gap-4">
-            <div className="text-xs">
+          <div className="px-4 py-8 border-t border-zinc-800 flex flex-col gap-2">
+            <div className="text-xs px-4 mb-2">
               <div className="font-mono text-zinc-300 truncate">{session.user.name}</div>
               <div className="text-zinc-600 mt-1 uppercase tracking-wider text-[10px]">{session.user.role || 'No Role'}</div>
             </div>
@@ -42,7 +42,7 @@ export default async function AppLayout({
             >
               <button 
                 type="submit"
-                className="text-xs tracking-widest uppercase text-left text-zinc-500 hover:text-zinc-100 w-full transition-colors"
+                className="text-xs tracking-widest uppercase text-left px-4 py-3 text-zinc-500 hover:text-red-400 hover:bg-red-950/30 rounded-sm w-full transition-all duration-300"
               >
                 Sign Out
               </button>
