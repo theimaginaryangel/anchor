@@ -12,9 +12,70 @@
  * Dependencies: @google/generative-ai
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, Schema, Type } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
+export interface RouteDecision {
+  action: 'search_document' | 'ask_clarification' | 'answer_directly';
+  reasoning: string;
+  response_text: string;
+}
+
+export async function routeQuery(
+  question: string,
+  previousAttempts: string[] = []
+): Promise<RouteDecision> {
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+
+  const routingSchema: Schema = {
+    type: Type.OBJECT,
+    properties: {
+      action: {
+        type: Type.STRING,
+        description: "Must be exactly one of: 'search_document', 'ask_clarification', or 'answer_directly'."
+      },
+      reasoning: {
+        type: Type.STRING,
+        description: "The rationale for choosing this action."
+      },
+      response_text: {
+        type: Type.STRING,
+        description: "If action is 'search_document', this is the optimized search query to use. If action is 'ask_clarification', this is the question to ask the user. If action is 'answer_directly', this is the final answer to the user."
+      }
+    },
+    required: ["action", "reasoning", "response_text"]
+  };
+
+  const historyContext = previousAttempts.length > 0 
+    ? `\nPREVIOUS FAILED SEARCH ATTEMPTS:\n${previousAttempts.map((a, i) => `${i+1}. "${a}" (yielded no relevant information)`).join('\n')}\nSince previous searches failed, you MUST either try a significantly different search query, ask for clarification, or answer directly if appropriate.`
+    : '';
+
+  const prompt = `You are the intelligent router for a document Q&A application called Anchor.
+The user is asking a question about their uploaded documents.
+
+You must decide the best action to take:
+1. 'search_document': The query requires finding specific information in the documents. Provide a refined, highly effective search query as the 'response_text'.
+2. 'ask_clarification': The query is ambiguous or underspecified (e.g. "what is the deadline" when there might be multiple). Ask a clarifying question as the 'response_text'.
+3. 'answer_directly': The query is conversational, meta, or a greeting (e.g. "hi", "what can you do", "thanks") that does NOT require document search. Answer it directly as the 'response_text'.
+
+USER QUESTION:
+${question}
+${historyContext}
+`;
+
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: routingSchema,
+    }
+  });
+
+  const responseText = result.response.text();
+  return JSON.parse(responseText) as RouteDecision;
+}
+
 
 export interface CitedAnswer {
   answer: string;

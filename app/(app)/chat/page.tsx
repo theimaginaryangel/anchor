@@ -9,6 +9,10 @@ type Message = {
   role: 'user' | 'assistant';
   content: string;
   citations?: Array<{ pageNumber: number; relevantText: string; chunkId: string }>;
+  routing?: {
+    action: string;
+    reasoning: string;
+  };
 };
 
 export default function ChatPage() {
@@ -47,7 +51,8 @@ export default function ChatPage() {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
           content: data.answer,
-          citations: data.citations
+          citations: data.citations,
+          routing: data.routing
         }]);
       } else {
         throw new Error(data.error);
@@ -106,6 +111,16 @@ export default function ChatPage() {
                   : 'bg-zinc-900 text-zinc-100 rounded-3xl rounded-bl-sm'
               }`}>
                 
+                {msg.routing && msg.role === 'assistant' && (
+                  <div className="mb-3">
+                    <span className="text-[10px] text-zinc-500 font-mono bg-zinc-900/50 px-2 py-1 rounded-full border border-zinc-800 flex items-center inline-flex gap-1.5 w-fit">
+                      {msg.routing.action === 'search_document' && <span>🔍 Searched: {msg.routing.reasoning}</span>}
+                      {msg.routing.action === 'ask_clarification' && <span>❓ Clarification: {msg.routing.reasoning}</span>}
+                      {msg.routing.action === 'answer_directly' && <span>⚡ Direct: {msg.routing.reasoning}</span>}
+                    </span>
+                  </div>
+                )}
+
                 <div className={`prose prose-sm max-w-none ${
                   msg.role === 'user' 
                     ? 'prose-zinc prose-a:text-black hover:prose-a:bg-zinc-200 prose-a:px-1 prose-a:rounded prose-a:transition-colors' 

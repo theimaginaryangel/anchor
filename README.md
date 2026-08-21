@@ -8,6 +8,7 @@ Anchor allows authenticated users to upload scanned PDFs, automatically extracts
 
 - **Enterprise OCR:** Uses AWS Textract to accurately parse text from complex, multi-page scanned PDFs.
 - **Semantic Search:** Text is chunked and embedded into a `pgvector` database using Gemini's 768-dimension embedding models.
+- **Agentic Query Routing:** The RAG pipeline employs a smart router that evaluates user intent before database retrieval, capable of answering meta-queries directly, asking for clarification, or refining search terms.
 - **Retrieval-Augmented Generation (RAG):** User queries run a cosine-similarity search against the database. The top results are fed to Gemini 3.5 Flash to generate accurate, cited answers.
 - **Secure Access:** Protected by Microsoft Entra ID (NextAuth v5), restricting upload and query access based on organizational roles.
 - **Infrastructure as Code:** Fully managed by Terraform and deployed automatically via GitHub Actions CI/CD.
@@ -37,6 +38,10 @@ Building a robust multi-cloud architecture required solving several deep technic
 3. **Handling Asynchronous Enterprise OCR**
    * **Challenge:** AWS Textract processing for large, multi-page PDFs can take several minutes, which would cause standard serverless Next.js API routes to time out and crash.
    * **Solution:** I implemented an asynchronous polling and state-management system. Documents are immediately written to the database with a `processing` status. A separate background pipeline handles the Textract polling, chunking, and embedding, providing a seamless, non-blocking user experience on the frontend dashboard.
+
+4. **Eliminating Inefficient Database Queries via Agentic Routing**
+   * **Challenge:** The initial RAG pipeline was a static "retrieve-then-generate" loop. If a user asked a conversational query (e.g., "Hello") or an ambiguous query (e.g., "What's the deadline?"), the system would blindly execute expensive vector embeddings and database searches, yielding poor results and wasting resources.
+   * **Solution:** I inserted an "agentic routing" layer before retrieval. A fast LLM call analyzes the user's intent and outputs a structured decision: answer directly, ask for clarification, or generate a refined search query. If a search yields insufficient information, the router loops back for a second refined attempt (capped at two iterations to prevent infinite loops), drastically improving response accuracy and system efficiency.
 
 ## Architecture
 

@@ -40,7 +40,14 @@ graph TD
 
     %% RAG Flow (User)
     User -->|Asks Question| NextJS
-    NextJS -->|Embeds Question| GeminiEmbed
+    NextJS -->|Agentic Router| GeminiChat
+    GeminiChat -->|Decides Action| NextJS
+    
+    %% Branch: Answer / Clarify
+    NextJS -.->|Direct Answer / Clarification| User
+    
+    %% Branch: Search Document
+    NextJS -->|Embeds Refined Query| GeminiEmbed
     GeminiEmbed -->|Returns Vector| NextJS
     NextJS -->|Cosine Similarity Search| Supabase
     Supabase -->|Returns Top 5 Chunks| NextJS
@@ -74,12 +81,16 @@ Handling large PDFs requires offloading OCR processing to prevent server timeout
 5. **Storage:** The chunks and their corresponding vectors are saved into Supabase using the `pgvector` extension.
 
 ### 2. Retrieval-Augmented Generation (RAG) Pipeline
-When a user asks a question, the system grounds the LLM using the ingested documents.
+When a user asks a question, the system uses an agentic routing step before grounding the LLM using the ingested documents.
 
-1. **Query Vectorization:** The user's text question is converted into a 768-dimension vector using the exact same Gemini embedding model.
-2. **Semantic Search:** A PostgreSQL RPC function (`match_chunks`) executes a cosine-similarity search against the `pgvector` index, returning the 5 most mathematically similar document chunks.
-3. **Prompt Construction:** The retrieved chunks are injected into a strict system prompt, instructing the LLM to answer the question using *only* the provided context.
-4. **Generation:** Google Gemini 3.5 Flash generates a natural language response containing bracketed citations (e.g., `[1]`) that map directly back to the source chunks and page numbers.
+1. **Agentic Routing:** The user's text question is sent to Gemini to decide the best action. The router returns a structured JSON decision to either:
+   - *Answer Directly* (for conversational meta-queries).
+   - *Ask Clarification* (if the query is ambiguous).
+   - *Search Document* (generates a refined search query for retrieval).
+2. **Query Vectorization:** If searching, the refined query is converted into a 768-dimension vector using the Gemini embedding model.
+3. **Semantic Search:** A PostgreSQL RPC function (`match_chunks`) executes a cosine-similarity search against the `pgvector` index, returning the 5 most mathematically similar document chunks.
+4. **Prompt Construction:** The retrieved chunks are injected into a strict system prompt, instructing the LLM to answer the question using *only* the provided context.
+5. **Generation & Loop Cap:** Google Gemini 3.5 Flash generates a natural language response containing bracketed citations. If the model determines it lacks sufficient information, the system loops back to the router for a second attempt (capped at a maximum of 2 iterations to prevent infinite re-search loops).
 
 ## Infrastructure
 All infrastructure is declared as code using **Terraform**. A GitHub Actions CI/CD pipeline validates formatting, runs type checks, executes `terraform apply`, and automatically merges successful deployments into the `main` branch.
