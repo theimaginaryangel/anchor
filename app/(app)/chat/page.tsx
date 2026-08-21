@@ -87,13 +87,13 @@ export default function ChatPage() {
             
             <div className="flex flex-wrap justify-center gap-3 max-w-2xl mt-4">
               <button onClick={() => handleSend("What are Benny's cloud engineering skills?")} className="px-5 py-3 rounded-full border border-zinc-800 bg-zinc-900/50 text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all text-left">
-                "What are Benny's cloud engineering skills?"
+                &quot;What are Benny&apos;s cloud engineering skills?&quot;
               </button>
               <button onClick={() => handleSend("Summarize Benny's experience with AWS.")} className="px-5 py-3 rounded-full border border-zinc-800 bg-zinc-900/50 text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all text-left">
-                "Summarize Benny's experience with AWS."
+                &quot;Summarize Benny&apos;s experience with AWS.&quot;
               </button>
               <button onClick={() => handleSend("What certifications does Benny hold?")} className="px-5 py-3 rounded-full border border-zinc-800 bg-zinc-900/50 text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all text-left">
-                "What certifications does Benny hold?"
+                &quot;What certifications does Benny hold?&quot;
               </button>
             </div>
           </div>
