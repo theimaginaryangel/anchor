@@ -18,7 +18,7 @@ export default async function Home() {
 
         {/* Value Prop */}
         <p className="text-zinc-400 text-lg md:text-xl font-light tracking-wide max-w-xl leading-relaxed">
-          Enterprise document intelligence. Extract, vectorize, and semantically query your scanned archives with exact citations.
+          Upload your PDFs, ask questions in plain English, and get instant answers backed by exact source citations.
         </p>
 
         {/* Tech Stack Showcase */}
