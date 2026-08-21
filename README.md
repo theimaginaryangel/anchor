@@ -1,69 +1,63 @@
 # Anchor
 
-A document Q&A tool that answers questions about uploaded PDFs and shows you exactly where the answer came from.
+A multi-cloud Document Q&A application built for enterprise-grade text extraction and semantic search.
 
-Upload a PDF (scanned or digital), ask a question, and get an answer with clickable citations that point to the source page and paragraph. Built to demonstrate five things in one working system:
+Anchor allows authenticated users to upload scanned PDFs, automatically extracts the text using AWS Textract, generates vector embeddings via Google Gemini, and provides an interactive chat interface to query the documents with exact source citations.
 
-- **OCR** — AWS Textract extracts text from scanned documents
-- **Document intelligence** — text is split into chunks that follow the document's own structure (headings and paragraphs, not arbitrary character counts)
-- **Embeddings** — chunks are turned into vectors using AWS Bedrock Titan Embeddings
-- **RAG** — questions are answered by retrieving the most relevant chunks and generating a cited response with Google Gemini
-- **Enterprise auth** — Microsoft Entra ID controls who can upload, delete, and query documents
+## Features
+
+- **Enterprise OCR:** Uses AWS Textract to accurately parse text from complex, multi-page scanned PDFs.
+- **Semantic Search:** Text is chunked and embedded into a `pgvector` database using Gemini's 768-dimension embedding models.
+- **Retrieval-Augmented Generation (RAG):** User queries run a cosine-similarity search against the database. The top results are fed to Gemini 3.5 Flash to generate accurate, cited answers.
+- **Secure Access:** Protected by Microsoft Entra ID (NextAuth v5), restricting upload and query access based on organizational roles.
+- **Infrastructure as Code:** Fully managed by Terraform and deployed automatically via GitHub Actions CI/CD.
 
 ## Tech Stack
 
-| Layer | Tool |
-|---|---|
-| Frontend + API | Next.js 14, TypeScript, Tailwind CSS |
-| OCR | AWS Textract |
-| Embeddings | AWS Bedrock (Titan Embeddings G1) |
-| Chat / Generation | Google Gemini API |
-| Vector database | Postgres + pgvector (Supabase) |
-| File storage | AWS S3 |
-| Auth | Microsoft Entra ID via NextAuth.js v5 |
+- **Frontend:** Next.js 14 (App Router), React, Tailwind CSS
+- **Backend:** Next.js API Routes, Node.js
+- **Database:** Supabase (PostgreSQL + pgvector)
+- **AI / ML:** AWS Textract (OCR), Google Gemini 3.5 (LLM + Embeddings)
+- **Storage:** AWS S3
+- **Auth:** NextAuth.js v5 (Microsoft Entra ID)
+- **Infrastructure:** Terraform, GitHub Actions
 
-## Quick Start
+## Architecture
 
-```bash
-# Clone and install
-git clone https://github.com/theimaginaryangel/anchor.git
-cd anchor
-npm install
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for detailed system diagrams and data flow.
 
-# Set up environment variables
-cp .env.example .env.local
-# Fill in your keys — see .env.example for what each variable does
+## Local Development
 
-# Run the dev server
-npm run dev
-```
+### Prerequisites
+- Node.js 20+
+- Terraform
+- AWS Account (S3, Textract)
+- Google AI Studio API Key
+- Supabase Project (pgvector enabled)
+- Microsoft Azure Portal (Entra ID App Registration)
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+### Setup
 
-## Documentation
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/theimaginaryangel/anchor.git
+   cd anchor
+   ```
 
-Detailed docs live in the [`docs/`](./docs/) folder:
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-- [Architecture](./docs/ARCHITECTURE.md) — how the whole system fits together
-- [Security](./docs/SECURITY.md) — auth, roles, data handling
-- [ADRs](./docs/adr/) — why each technology was chosen
-- [API Spec](./docs/openapi.yaml) — endpoint definitions
+3. **Configure environment variables:**
+   Create a `.env.local` file using the provided `.env.example` template and fill in your keys.
 
-## Project Status
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:3000`.
 
-This project is being built in phases. See the [architecture doc](./docs/ARCHITECTURE.md) for the full plan.
+## License
 
-| Phase | Status |
-|---|---|
-| 0 — Scaffold and docs | ✅ Done |
-| 1 — Auth (Entra ID) | 🔲 Next |
-| 2 — Document ingestion (OCR) | 🔲 Planned |
-| 3 — Chunking | 🔲 Planned |
-| 4 — Embeddings and search | 🔲 Planned |
-| 5 — RAG and citations | 🔲 Planned |
-| 6 — Sample data and deploy | 🔲 Planned |
-| 7 — Documentation pass | 🔲 Planned |
-
-## Author
-
-Benny Asante Duah — [bennyduah.com](https://bennyduah.com) · [GitHub](https://github.com/theimaginaryangel)
+MIT

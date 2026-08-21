@@ -1,49 +1,85 @@
-# Architecture
+# Architecture Overview
 
-> This document will be filled in fully during Phase 7. For now, it outlines the system's structure and data flow.
+Anchor is designed using a multi-cloud architecture, leveraging AWS for heavy data processing and storage, Google Cloud for AI inference, and Supabase for vector retrieval.
 
-## System Overview
+## System Diagram
 
-Anchor is a single Next.js application that handles both the UI and the API. There's no separate backend server. The AI and storage pieces run on AWS (Textract, Bedrock, S3), the database is Postgres with pgvector on Supabase, and authentication goes through Microsoft Entra ID.
+```mermaid
+graph TD
+    %% Users
+    User((User))
+    Admin((Admin))
 
-## Data Flow
+    %% Frontend / Auth
+    NextJS[Next.js 14 App Router]
+    EntraID[Microsoft Entra ID]
 
-Here's what happens from upload to cited answer:
+    %% Storage & DB
+    S3[(AWS S3)]
+    Supabase[(Supabase pgvector)]
 
-1. **Upload** — User uploads a PDF. The file goes to S3.
-2. **OCR** — The app starts an AWS Textract job on the S3 file. Textract extracts text from every page, including scanned/image pages.
-3. **Chunking** — The raw Textract output is parsed into chunks that respect the document's structure. A chunk is typically a heading plus its paragraphs. Each chunk records its page number and position.
-4. **Embedding** — Each chunk is sent to AWS Bedrock (Titan Embeddings G1), which returns a 1,536-dimension vector. The vector is stored in Postgres alongside the chunk.
-5. **Question** — User asks a question. The question is embedded using the same model.
-6. **Retrieval** — pgvector finds the chunks whose vectors are closest to the question vector.
-7. **Generation** — The top chunks and the question are sent to Google Gemini. The prompt tells Gemini to answer only from the provided chunks and to cite which chunk each part of the answer came from.
-8. **Citation** — The answer is displayed with clickable references that link back to the source page and section.
+    %% External Services
+    Textract[AWS Textract]
+    GeminiEmbed[Gemini Embeddings]
+    GeminiChat[Gemini 3.5 Flash]
 
-## Component Map
+    %% Authentication Flow
+    User -->|Logs in| EntraID
+    Admin -->|Logs in| EntraID
+    EntraID -->|Returns JWT + Role| NextJS
 
+    %% Ingestion Flow (Admin)
+    Admin -->|Uploads PDF| NextJS
+    NextJS -->|Saves PDF| S3
+    NextJS -->|Triggers OCR| Textract
+    Textract -->|Returns Raw Text| NextJS
+    NextJS -->|Chunks Text| NextJS
+    NextJS -->|Requests Vector| GeminiEmbed
+    GeminiEmbed -->|Returns 768-dim Vector| NextJS
+    NextJS -->|Saves Chunks & Vectors| Supabase
+
+    %% RAG Flow (User)
+    User -->|Asks Question| NextJS
+    NextJS -->|Embeds Question| GeminiEmbed
+    GeminiEmbed -->|Returns Vector| NextJS
+    NextJS -->|Cosine Similarity Search| Supabase
+    Supabase -->|Returns Top 5 Chunks| NextJS
+    NextJS -->|Sends Context + Prompt| GeminiChat
+    GeminiChat -->|Generates Cited Answer| NextJS
+    NextJS -->|Displays UI| User
+
+    %% Styling
+    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:black;
+    classDef google fill:#4285F4,stroke:#0F9D58,stroke-width:2px,color:white;
+    classDef db fill:#3ECF8E,stroke:#1E1E1E,stroke-width:2px,color:black;
+    classDef core fill:#000000,stroke:#FFFFFF,stroke-width:2px,color:white;
+
+    class S3,Textract aws;
+    class GeminiEmbed,GeminiChat google;
+    class Supabase db;
+    class NextJS core;
 ```
-app/                    → Next.js pages and API routes
-lib/ocr/                → AWS Textract client
-lib/chunking/           → Document structure parser
-lib/embeddings/         → AWS Bedrock Titan client
-lib/retrieval/          → pgvector similarity search
-lib/chat/               → Google Gemini client
-lib/auth/               → NextAuth.js + Entra ID config
-db/                     → Postgres schema and migrations
-```
+
+## Core Pipelines
+
+The application is split into two primary asynchronous pipelines:
+
+### 1. Document Ingestion Pipeline
+Handling large PDFs requires offloading OCR processing to prevent server timeouts.
+
+1. **Upload:** PDFs are uploaded via the Next.js API and streamed directly to an AWS S3 bucket.
+2. **OCR:** An asynchronous job is triggered in AWS Textract (`StartDocumentTextDetection`).
+3. **Polling & Chunking:** A background process polls Textract for completion. Once finished, the raw text is parsed and split into ~500-character logical chunks.
+4. **Vectorization:** Each chunk is sent to Google's `gemini-embedding-2` model, which generates a 768-dimension mathematical representation of the text.
+5. **Storage:** The chunks and their corresponding vectors are saved into Supabase using the `pgvector` extension.
+
+### 2. Retrieval-Augmented Generation (RAG) Pipeline
+When a user asks a question, the system grounds the LLM using the ingested documents.
+
+1. **Query Vectorization:** The user's text question is converted into a 768-dimension vector using the exact same Gemini embedding model.
+2. **Semantic Search:** A PostgreSQL RPC function (`match_chunks`) executes a cosine-similarity search against the `pgvector` index, returning the 5 most mathematically similar document chunks.
+3. **Prompt Construction:** The retrieved chunks are injected into a strict system prompt, instructing the LLM to answer the question using *only* the provided context.
+4. **Generation:** Google Gemini 3.5 Flash generates a natural language response containing bracketed citations (e.g., `[1]`) that map directly back to the source chunks and page numbers.
 
 ## Infrastructure
-
-| Service | What it does | Why this one |
-|---|---|---|
-| Next.js 14 | UI + API | Same stack as the rest of the portfolio |
-| AWS Textract | OCR | Reads directly from S3, same AWS account |
-| AWS Bedrock | Embeddings | Keeps AI services inside AWS |
-| Google Gemini | Answer generation | Available via existing API key |
-| Supabase | Postgres + pgvector | Free tier, already in use |
-| AWS S3 | PDF storage | Standard, Textract reads from it directly |
-| Entra ID | Authentication | Required by the target role |
-
-## Diagrams
-
-_To be added in Phase 7._
+All infrastructure is declared as code using **Terraform**. A GitHub Actions CI/CD pipeline validates formatting, runs type checks, executes `terraform apply`, and automatically merges successful deployments into the `main` branch.

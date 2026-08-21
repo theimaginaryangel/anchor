@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import ReactMarkdown from 'react-markdown';
+
 type Message = {
   id: string;
   role: 'user' | 'assistant';
@@ -71,18 +73,20 @@ export default function ChatPage() {
               <div className={`max-w-[80%] rounded-2xl px-6 py-4 ${
                 msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'
               }`}>
-                <p className="whitespace-pre-wrap">{msg.content}</p>
+                <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert' : ''}`}>
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
                 
                 {msg.citations && msg.citations.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-300">
-                    <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Sources:</p>
+                  <div className="mt-4 pt-4 border-t border-gray-300/30">
+                    <p className="text-xs font-bold uppercase tracking-wider mb-2 opacity-75">Sources:</p>
                     <div className="flex flex-col gap-2">
                       {msg.citations.map((c, i) => (
-                        <details key={c.chunkId} className="text-sm bg-white rounded p-2 shadow-sm border border-gray-200">
-                          <summary className="cursor-pointer text-blue-600 font-medium">
+                        <details key={c.chunkId} className="text-sm rounded p-2 border border-gray-300/30">
+                          <summary className="cursor-pointer font-medium opacity-90">
                             [{i + 1}] Page {c.pageNumber}
                           </summary>
-                          <p className="mt-2 text-gray-600 italic text-xs leading-relaxed border-l-2 border-gray-300 pl-2">
+                          <p className="mt-2 italic text-xs leading-relaxed border-l-2 border-gray-300/50 pl-2 opacity-75">
                             "{c.relevantText}"
                           </p>
                         </details>
