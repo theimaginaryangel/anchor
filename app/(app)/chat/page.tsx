@@ -124,7 +124,7 @@ export default function ChatPage() {
                             Page {c.pageNumber}
                           </summary>
                           <p className="mt-2 text-zinc-400 text-xs leading-relaxed pl-2 border-l-2 border-zinc-700 italic">
-                            "{c.relevantText}"
+                            &quot;{c.relevantText}&quot;
                           </p>
                         </details>
                       ))}
