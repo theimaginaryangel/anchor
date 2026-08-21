@@ -135,6 +135,15 @@ export default function ChatPage() {
             </div>
           ))
         )}
+        {isLoading && messages.length > 0 && (
+          <div className="flex justify-start">
+            <div className="px-5 py-4 bg-zinc-900 text-zinc-100 rounded-3xl rounded-bl-sm flex items-center gap-1.5 h-[52px]">
+              <span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce"></span>
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
