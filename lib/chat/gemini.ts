@@ -12,7 +12,7 @@
  * Dependencies: @google/generative-ai
  */
 
-import { GoogleGenerativeAI, Schema, Type } from '@google/generative-ai';
+import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -29,18 +29,18 @@ export async function routeQuery(
   const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
 
   const routingSchema: Schema = {
-    type: Type.OBJECT,
+    type: SchemaType.OBJECT,
     properties: {
       action: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "Must be exactly one of: 'search_document', 'ask_clarification', or 'answer_directly'."
       },
       reasoning: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "The rationale for choosing this action."
       },
       response_text: {
-        type: Type.STRING,
+        type: SchemaType.STRING,
         description: "If action is 'search_document', this is the optimized search query to use. If action is 'ask_clarification', this is the question to ask the user. If action is 'answer_directly', this is the final answer to the user."
       }
     },
