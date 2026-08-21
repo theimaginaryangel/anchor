@@ -75,12 +75,14 @@ export default function ChatPage() {
             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[75%] px-5 py-3.5 ${
                 msg.role === 'user' 
-                  ? 'bg-blue-600 text-white rounded-3xl rounded-br-sm' 
+                  ? 'bg-zinc-100 text-black rounded-3xl rounded-br-sm' 
                   : 'bg-zinc-900 text-zinc-100 rounded-3xl rounded-bl-sm'
               }`}>
                 
                 <div className={`prose prose-sm max-w-none ${
-                  msg.role === 'user' ? 'prose-invert' : 'prose-invert prose-a:text-blue-400 hover:prose-a:bg-blue-900/30 prose-a:px-1 prose-a:rounded prose-a:transition-colors'
+                  msg.role === 'user' 
+                    ? 'prose-zinc prose-a:text-black hover:prose-a:bg-zinc-200 prose-a:px-1 prose-a:rounded prose-a:transition-colors' 
+                    : 'prose-invert prose-a:text-white hover:prose-a:bg-zinc-800 prose-a:px-1 prose-a:rounded prose-a:transition-colors'
                 }`}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
