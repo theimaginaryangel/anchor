@@ -4,11 +4,12 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({ model: 'gemini-embedding-2' });
 
 export async function embedText(text: string): Promise<number[]> {
+  // outputDimensionality is supported by the API but not yet in the SDK's type definitions
   const result = await model.embedContent({
     content: { role: 'user', parts: [{ text }] },
     taskType: TaskType.RETRIEVAL_DOCUMENT,
     outputDimensionality: 768
-  });
+  } as Parameters<typeof model.embedContent>[0]);
   return result.embedding.values;
 }
 
