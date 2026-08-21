@@ -70,24 +70,31 @@ export default function ChatPage() {
         ) : (
           messages.map(msg => (
             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] px-6 py-6 border ${
-                msg.role === 'user' ? 'bg-zinc-100 text-black border-white' : 'bg-zinc-950 text-zinc-300 border-zinc-800'
+              <div className={`max-w-[85%] px-6 py-6 shadow-xl ${
+                msg.role === 'user' 
+                  ? 'bg-zinc-100 text-zinc-900 rounded-2xl rounded-tr-sm' 
+                  : 'bg-zinc-900 text-zinc-100 border border-zinc-700/50 rounded-2xl rounded-tl-sm'
               }`}>
+                {/* Role Label */}
+                <div className={`text-[10px] font-mono uppercase tracking-widest mb-3 ${msg.role === 'user' ? 'text-zinc-500 text-right' : 'text-zinc-500'}`}>
+                  {msg.role === 'user' ? 'You' : 'Anchor AI'}
+                </div>
+
                 <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-zinc' : 'prose-invert'}`}>
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
                 
                 {msg.citations && msg.citations.length > 0 && (
-                  <div className="mt-6 pt-6 border-t border-zinc-800/50">
-                    <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4">Referenced Sources</p>
-                    <div className="flex flex-col gap-3">
+                  <div className="mt-6 pt-6 border-t border-zinc-700/50">
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-3">Referenced Sources</p>
+                    <div className="flex flex-col gap-2">
                       {msg.citations.map((c, i) => (
-                        <details key={c.chunkId} className="group">
-                          <summary className="cursor-pointer font-mono text-xs text-zinc-400 hover:text-zinc-200 list-none flex items-center gap-2">
-                            <span className="text-[10px] border border-zinc-700 px-1 py-0.5">[{i + 1}]</span> 
+                        <details key={c.chunkId} className="group bg-zinc-950/50 border border-zinc-800 rounded-md p-3">
+                          <summary className="cursor-pointer font-mono text-xs text-zinc-300 hover:text-white list-none flex items-center gap-2">
+                            <span className="text-[10px] bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded">[{i + 1}]</span> 
                             Page {c.pageNumber}
                           </summary>
-                          <p className="mt-3 text-zinc-500 text-xs leading-relaxed border-l border-zinc-800 pl-4 font-serif italic">
+                          <p className="mt-3 text-zinc-400 text-xs leading-relaxed border-l-2 border-zinc-700 pl-3 font-serif italic">
                             "{c.relevantText}"
                           </p>
                         </details>
@@ -101,22 +108,22 @@ export default function ChatPage() {
         )}
       </div>
 
-      <div className="relative">
+      <div className="relative group">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)}
           disabled={isLoading}
-          placeholder="ENTER QUERY..."
-          className="w-full bg-zinc-950 border border-zinc-800 text-zinc-100 px-6 py-4 font-mono text-xs tracking-wider placeholder:text-zinc-700 focus:outline-none focus:border-zinc-500 disabled:opacity-50"
+          placeholder="Type your query here..."
+          className="w-full bg-zinc-900 border border-zinc-700 rounded-xl text-zinc-100 px-6 py-5 font-mono text-sm tracking-wide placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-600 focus:border-transparent disabled:opacity-50 shadow-lg transition-all"
         />
         <button
           onClick={handleSubmit}
           disabled={isLoading || !input.trim()}
-          className="absolute right-2 top-2 bottom-2 px-6 bg-zinc-100 text-black font-mono text-xs tracking-widest uppercase hover:bg-white disabled:opacity-0 transition-opacity"
+          className="absolute right-3 top-3 bottom-3 px-6 rounded-lg bg-zinc-100 text-zinc-900 font-bold text-xs uppercase tracking-wider hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
         >
-          Submit
+          {isLoading ? 'Searching...' : 'Send'}
         </button>
       </div>
     </div>
