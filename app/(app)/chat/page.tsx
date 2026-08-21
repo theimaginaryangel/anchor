@@ -69,7 +69,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)]">
+    <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-6rem)]">
       <div className="mb-8 border-b border-zinc-800 pb-8">
         <h1 className="text-4xl font-light tracking-tighter text-zinc-100">Query</h1>
         <p className="text-zinc-500 mt-2 font-mono text-xs uppercase tracking-widest">Natural Language Document Search</p>
@@ -100,7 +100,7 @@ export default function ChatPage() {
         ) : (
           messages.map(msg => (
             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[75%] px-5 py-3.5 ${
+              <div className={`max-w-[90%] md:max-w-[75%] px-5 py-3.5 ${
                 msg.role === 'user' 
                   ? 'bg-zinc-100 text-black rounded-3xl rounded-br-sm' 
                   : 'bg-zinc-900 text-zinc-100 rounded-3xl rounded-bl-sm'

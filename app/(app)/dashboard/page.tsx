@@ -74,42 +74,42 @@ export default function DashboardPage() {
 
       {/* Minimalist Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-zinc-800 border border-zinc-800">
-        <div className="bg-zinc-950 p-8">
+        <div className="bg-zinc-950 p-6 md:p-8">
           <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest mb-4">Total Documents</p>
           <p className="text-5xl font-light tracking-tighter text-zinc-100">{documents.length}</p>
         </div>
         
-        <div className="bg-zinc-950 p-8">
+        <div className="bg-zinc-950 p-6 md:p-8">
           <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest mb-4">Queries Executed</p>
           <p className="text-5xl font-light tracking-tighter text-zinc-100">0</p>
         </div>
         
-        <div className="bg-zinc-950 p-8">
+        <div className="bg-zinc-950 p-6 md:p-8">
           <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest mb-4">System Status</p>
           <p className="text-5xl font-light tracking-tighter text-zinc-100">Online</p>
         </div>
       </div>
       
       {/* Minimalist List */}
-      <div className="border border-zinc-800">
-        <div className="px-8 py-4 border-b border-zinc-800 bg-zinc-900/30">
+      <div className="border border-zinc-800 overflow-hidden">
+        <div className="px-6 md:px-8 py-4 border-b border-zinc-800 bg-zinc-900/30">
           <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-400">Knowledge Base</h2>
         </div>
         <div className="divide-y divide-zinc-800 bg-zinc-950">
           {documents.length === 0 ? (
-            <div className="p-12 text-center text-zinc-500 font-mono text-sm">
+            <div className="p-8 md:p-12 text-center text-zinc-500 font-mono text-sm">
               No documents currently indexed.
             </div>
           ) : (
             documents.map(doc => (
-              <div key={doc.id} className="p-8 flex items-center justify-between hover:bg-zinc-900/50 transition-colors">
-                <div>
-                  <h3 className="font-light text-zinc-200 tracking-wide">{doc.filename}</h3>
+              <div key={doc.id} className="p-4 md:p-8 flex flex-col md:flex-row md:items-center justify-between hover:bg-zinc-900/50 transition-colors gap-4 md:gap-0">
+                <div className="truncate">
+                  <h3 className="font-light text-zinc-200 tracking-wide truncate pr-4">{doc.filename}</h3>
                   <p className="font-mono text-xs text-zinc-600 mt-2 uppercase tracking-wider">
                     {new Date(doc.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div>
+                <div className="flex-shrink-0 self-start md:self-auto">
                   <span className={`px-2 py-1 border text-[10px] font-mono uppercase tracking-widest ${
                     doc.status === 'ready' ? 'border-zinc-700 text-zinc-300' : 
                     doc.status === 'processing' ? 'border-zinc-600 text-zinc-400' : 

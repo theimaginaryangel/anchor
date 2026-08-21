@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import MobileNav from "@/components/mobile-nav";
 
 export default async function AppLayout({
   children,
@@ -10,8 +11,8 @@ export default async function AppLayout({
 
   return (
     <div className="flex h-screen flex-col md:flex-row md:overflow-hidden bg-[#0a0a0a]">
-      {/* Minimalist Sidebar */}
-      <div className="w-full flex-none md:w-64 bg-[#0a0a0a] border-r border-zinc-800 text-zinc-100 flex flex-col">
+      {/* Desktop Sidebar — hidden on mobile */}
+      <div className="hidden md:flex w-64 flex-none bg-[#0a0a0a] border-r border-zinc-800 text-zinc-100 flex-col">
         <div className="p-8 font-light text-2xl tracking-tighter">
           Anchor.
         </div>
@@ -50,9 +51,13 @@ export default async function AppLayout({
           </div>
         )}
       </div>
+
+      {/* Mobile Header — visible only on mobile */}
+      <MobileNav userName={session?.user?.name || null} userRole={session?.user?.role || null} />
+
       {/* Main Content Area */}
-      <div className="flex-grow md:overflow-y-auto bg-zinc-950 text-zinc-100 selection:bg-zinc-800 selection:text-white">
-        <div className="max-w-6xl mx-auto p-6 md:p-12">
+      <div className="flex-grow overflow-y-auto bg-zinc-950 text-zinc-100 selection:bg-zinc-800 selection:text-white custom-scrollbar">
+        <div className="max-w-6xl mx-auto p-4 pt-4 md:p-12">
           {children}
         </div>
       </div>

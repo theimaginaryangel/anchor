@@ -69,8 +69,8 @@ export default function UploadPage() {
         </p>
       </div>
 
-      <div className="bg-zinc-950 border border-zinc-800 p-12">
-        <div className="border-2 border-dashed border-zinc-800 p-16 text-center hover:bg-zinc-900/50 transition-colors group cursor-pointer relative">
+      <div className="bg-zinc-950 border border-zinc-800 p-4 md:p-12">
+        <div className="border-2 border-dashed border-zinc-800 p-8 md:p-16 text-center hover:bg-zinc-900/50 transition-colors group cursor-pointer relative">
           <input 
             id="file-upload"
             type="file" 
