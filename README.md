@@ -22,6 +22,22 @@ Anchor allows authenticated users to upload scanned PDFs, automatically extracts
 - **Auth:** NextAuth.js v5 (Microsoft Entra ID)
 - **Infrastructure:** Terraform, GitHub Actions
 
+## Challenges & Engineering Decisions
+
+Building a robust multi-cloud architecture required solving several deep technical constraints:
+
+1. **Circumventing Vector Dimensionality Limits in PostgreSQL**
+   * **Challenge:** Google Gemini's embedding models default to generating 3072-dimension vectors. However, Supabase's `pgvector` extension utilizing `ivfflat` indexing strictly crashes when attempting to index anything exceeding 2000 dimensions (`ERROR: 54000`).
+   * **Solution:** Rather than using a less capable model, I engineered the embedding pipeline to interface directly with the Gemini API to mathematically compress the vector output dimensionality to exactly 768 before database insertion, maintaining high semantic accuracy while strictly adhering to indexing constraints.
+
+2. **Mitigating Cloud Provider Throttling**
+   * **Challenge:** The initial design utilized AWS Bedrock (Titan Embeddings) for vectorization. However, strict AWS account quotas caused severe `ThrottlingException` errors when processing large documents with hundreds of text chunks.
+   * **Solution:** I decoupled the AI inference pipeline, executing a rapid pivot to a multi-cloud architecture. AWS was retained for its industry-leading OCR (Textract), while the heavy LLM embedding workloads were offloaded to Google Cloud (Gemini), successfully bypassing quota limitations and increasing throughput.
+
+3. **Handling Asynchronous Enterprise OCR**
+   * **Challenge:** AWS Textract processing for large, multi-page PDFs can take several minutes, which would cause standard serverless Next.js API routes to time out and crash.
+   * **Solution:** I implemented an asynchronous polling and state-management system. Documents are immediately written to the database with a `processing` status. A separate background pipeline handles the Textract polling, chunking, and embedding, providing a seamless, non-blocking user experience on the frontend dashboard.
+
 ## Architecture
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for detailed system diagrams and data flow.
