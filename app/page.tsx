@@ -10,6 +10,9 @@ export default async function Home() {
         
         {/* Minimalist Logo / Title */}
         <div className="space-y-4 tracking-tighter">
+          <p className="text-zinc-500 font-mono text-xs tracking-widest uppercase">
+            {"Benny's Portfolio"}
+          </p>
           <h1 className="text-5xl md:text-7xl font-light">
             Anchor
           </h1>
@@ -64,9 +67,14 @@ export default async function Home() {
         </div>
         
         {/* Footer Credit */}
-        <div className="absolute bottom-12 text-xs font-mono text-zinc-600 tracking-widest uppercase">
-          Benny Asante Duah
-        </div>
+        <a 
+          href="https://bennyduah.com" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="absolute bottom-12 text-xs font-mono text-zinc-600 tracking-widest uppercase hover:text-zinc-300 transition-colors"
+        >
+          ← bennyduah.com
+        </a>
       </div>
     </main>
   );
