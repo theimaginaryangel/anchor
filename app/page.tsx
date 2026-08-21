@@ -13,7 +13,10 @@ export default async function Home() {
           <h1 className="text-5xl md:text-7xl font-light">
             Anchor
           </h1>
-          <div className="w-12 h-[1px] bg-zinc-700 mx-auto rounded-full"></div>
+          <p className="text-zinc-500 font-mono text-sm tracking-widest uppercase">
+            Multi-Cloud Retrieval-Augmented Generation (RAG) System
+          </p>
+          <div className="w-12 h-[1px] bg-zinc-700 mx-auto rounded-full mt-8"></div>
         </div>
 
         {/* Value Prop */}
