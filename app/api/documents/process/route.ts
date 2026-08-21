@@ -22,6 +22,7 @@ export async function POST() {
     }
 
     let processedCount = 0;
+    let inProgressCount = 0;
 
     // 2. Loop through each and check AWS Textract
     for (const doc of documents) {
@@ -34,7 +35,7 @@ export async function POST() {
 
           if (chunks.length > 0) {
             // 4. Save chunks to Supabase
-            const chunkInserts = chunks.map((c, idx) => ({
+            const chunkInserts = chunks.map((c: any, idx: number) => ({
               document_id: doc.id,
               chunk_index: idx,
               content: c.content,
@@ -54,8 +55,8 @@ export async function POST() {
               continue;
             }
 
-            // 5. Generate embeddings for the chunks using AWS Bedrock
-            const textsToEmbed = savedChunks.map(c => c.content);
+            // 5. Generate embeddings for the chunks using Gemini
+            const textsToEmbed = savedChunks.map((c: any) => c.content);
             const vectors = await embedBatch(textsToEmbed);
 
             // 6. Save embeddings to Supabase
@@ -80,16 +81,23 @@ export async function POST() {
             .from('documents')
             .update({ status: 'failed' })
             .eq('id', doc.id);
+        } else if (result.JobStatus === 'IN_PROGRESS') {
+          inProgressCount++;
         }
       } catch (err) {
         console.error(`Error processing document ${doc.id}:`, err);
       }
     }
 
+    let message = `Checked ${documents.length} documents. Finished processing ${processedCount}.`;
+    if (inProgressCount > 0) {
+      message += ` ${inProgressCount} documents are still being processed by AWS (check again in 30 seconds).`;
+    }
+
     return NextResponse.json({ 
       success: true, 
       processedCount,
-      message: `Checked ${documents.length} documents, finished processing ${processedCount}` 
+      message
     });
 
   } catch (error) {
