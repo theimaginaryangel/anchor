@@ -1,12 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { canDelete } from '@/lib/auth/roles';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabase } from '@/lib/supabase';
 
 /**
  * GET /api/documents
