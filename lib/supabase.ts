@@ -5,21 +5,27 @@
  * Uses the service role key (not the anon key) because all database
  * access happens in API routes, not in the browser.
  *
- * Implemented in Phase 2 (first used when storing documents).
+ * Lazy-initialized to avoid crashing during `next build` when
+ * environment variables are not yet available.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let _supabase: SupabaseClient | null = null;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  // This will throw at startup if env vars are missing,
-  // which is better than a confusing error later.
-  throw new Error(
-    'Missing Supabase environment variables. ' +
-    'Check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local'
-  );
-}
-
-export const supabase = createClient(supabaseUrl, supabaseServiceKey);
+export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    if (!_supabase) {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (!url || !key) {
+        throw new Error(
+          'Missing Supabase environment variables. ' +
+          'Check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local'
+        );
+      }
+      _supabase = createClient(url, key);
+    }
+    return (_supabase as any)[prop];
+  }
+});
