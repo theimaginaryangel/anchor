@@ -8,23 +8,22 @@ export default async function Home() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] text-zinc-100 p-8 selection:bg-zinc-800 selection:text-white">
       <div className="max-w-3xl w-full flex flex-col items-center text-center space-y-12">
         
-        {/* Minimalist Logo / Title */}
+        {/* Title */}
         <div className="space-y-4 tracking-tighter">
-          <p className="text-zinc-500 font-mono text-xs tracking-widest uppercase">
-            {"Benny's Portfolio"}
-          </p>
           <h1 className="text-5xl md:text-7xl font-light">
             Anchor
           </h1>
           <p className="text-zinc-500 font-mono text-sm tracking-widest uppercase">
-            Multi-Cloud Retrieval-Augmented Generation (RAG) System
+            Multi-Cloud RAG System
+          </p>
+          <p className="text-zinc-600 font-mono text-[10px] tracking-widest uppercase">
+            Retrieval-Augmented Generation
           </p>
           <div className="w-12 h-[1px] bg-zinc-700 mx-auto rounded-full mt-8"></div>
         </div>
 
-        {/* Value Prop */}
         <p className="text-zinc-400 text-lg md:text-xl font-light tracking-wide max-w-xl leading-relaxed">
-          Upload your PDFs, ask questions in plain English, and get instant answers backed by exact source citations.
+          Upload PDFs. Ask questions. Get cited answers.
         </p>
 
         {/* Tech Stack Showcase */}
