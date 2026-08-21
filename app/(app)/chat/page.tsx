@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import ReactMarkdown from 'react-markdown';
 
@@ -15,12 +15,20 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: input };
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
+
+  const handleSend = async (text: string) => {
+    if (!text.trim() || isLoading) return;
+
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
@@ -55,6 +63,11 @@ export default function ChatPage() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSend(input);
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
       <div className="mb-8 border-b border-zinc-800 pb-8">
@@ -62,13 +75,27 @@ export default function ChatPage() {
         <p className="text-zinc-500 mt-2 font-mono text-xs uppercase tracking-widest">Natural Language Document Search</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto mb-6 pr-4 space-y-6 scrollbar-thin scrollbar-thumb-zinc-800">
+      <div className="flex-1 overflow-y-auto mb-6 pr-4 space-y-6 custom-scrollbar">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-zinc-500 gap-4">
-            <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center text-2xl">
-              ⚓
+          <div className="h-full flex flex-col items-center justify-center text-zinc-500 gap-8">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center text-2xl shadow-sm border border-zinc-800/50">
+                ⚓
+              </div>
+              <p className="font-medium text-sm text-zinc-400">How can I help you today?</p>
             </div>
-            <p className="font-medium text-sm">How can I help you today?</p>
+            
+            <div className="flex flex-wrap justify-center gap-3 max-w-2xl mt-4">
+              <button onClick={() => handleSend("What are Benny's cloud engineering skills?")} className="px-5 py-3 rounded-full border border-zinc-800 bg-zinc-900/50 text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all text-left">
+                "What are Benny's cloud engineering skills?"
+              </button>
+              <button onClick={() => handleSend("Summarize Benny's experience with AWS.")} className="px-5 py-3 rounded-full border border-zinc-800 bg-zinc-900/50 text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all text-left">
+                "Summarize Benny's experience with AWS."
+              </button>
+              <button onClick={() => handleSend("What certifications does Benny hold?")} className="px-5 py-3 rounded-full border border-zinc-800 bg-zinc-900/50 text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all text-left">
+                "What certifications does Benny hold?"
+              </button>
+            </div>
           </div>
         ) : (
           messages.map(msg => (
@@ -108,6 +135,7 @@ export default function ChatPage() {
             </div>
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="relative group max-w-4xl mx-auto w-full">
