@@ -39,7 +39,7 @@ export default function LoginPage() {
         <form
           action={async () => {
             "use server"
-            await signIn("guest", { redirectTo: "/dashboard" })
+            await signIn("guest", { redirectTo: "/dashboard", guest: "true" })
           }}
           className="w-full"
         >
