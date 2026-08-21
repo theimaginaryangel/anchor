@@ -25,26 +25,27 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-gray-600 mt-1">
+            Your documents and recent activity will appear here.
+          </p>
+        </div>
         <button 
           onClick={handleProcess}
           disabled={isProcessing}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium disabled:bg-gray-400"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-bold shadow-lg transition-transform hover:scale-105 disabled:bg-gray-400 disabled:transform-none"
         >
-          {isProcessing ? 'Checking...' : 'Process Pending Documents'}
+          {isProcessing ? '⚙️ Processing...' : '⚡ Process Pending Documents'}
         </button>
       </div>
 
       {message && (
-        <div className="mb-6 p-4 rounded bg-blue-50 text-blue-800 border border-blue-200">
+        <div className="mb-6 p-4 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 font-medium">
           {message}
         </div>
       )}
-
-      <p className="text-gray-600 mb-8">
-        Your documents and recent activity will appear here.
-      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Placeholder cards */}
