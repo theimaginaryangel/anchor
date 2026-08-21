@@ -57,54 +57,65 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-2">Upload Document</h1>
-      <p className="text-gray-600 mb-8">
-        Upload a PDF to extract text and make it searchable. Scanned documents are processed with OCR.
-      </p>
-
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:bg-gray-50 transition-colors">
-        <div className="text-4xl mb-4">📄</div>
-        <div className="mb-4">
-          <label htmlFor="file-upload" className="cursor-pointer text-blue-600 hover:text-blue-800 font-semibold">
-            Click to browse
-            <input
-              id="file-upload"
-              type="file"
-              accept=".pdf"
-              className="hidden"
-              onChange={handleFileChange}
-              disabled={isUploading}
-            />
-          </label>
-          <span className="text-gray-500"> or drag and drop a PDF here</span>
-        </div>
-        <p className="text-sm text-gray-500">Supported format: PDF (up to 50MB)</p>
+    <div className="max-w-3xl mx-auto space-y-12">
+      <div className="border-b border-zinc-800 pb-8">
+        <h1 className="text-4xl font-light tracking-tighter text-zinc-100">Upload</h1>
+        <p className="text-zinc-500 mt-2 font-mono text-xs uppercase tracking-widest">
+          Ingest new documents into the knowledge base
+        </p>
       </div>
 
-      {file && (
-        <div className="mt-6 p-4 bg-blue-50 text-blue-800 rounded flex justify-between items-center border border-blue-200">
-          <span className="font-medium truncate mr-4">{file.name}</span>
-          <span className="text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+      <div className="bg-zinc-950 border border-zinc-800 p-12">
+        <div className="border-2 border-dashed border-zinc-800 p-16 text-center hover:bg-zinc-900/50 transition-colors group cursor-pointer relative">
+          <input 
+            id="file-upload"
+            type="file" 
+            accept=".pdf" 
+            onChange={handleFileChange} 
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            disabled={isUploading}
+          />
+          <div className="text-4xl mb-6 opacity-50 group-hover:opacity-100 transition-opacity grayscale">
+            📄
+          </div>
+          {file ? (
+            <div className="space-y-2">
+              <p className="text-zinc-200 font-medium tracking-wide">{file.name}</p>
+              <p className="text-zinc-600 font-mono text-xs uppercase">
+                {(file.size / 1024 / 1024).toFixed(2)} MB
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-zinc-400 font-light tracking-wide">
+                <span className="text-zinc-200 font-medium">Click to browse</span> or drag and drop
+              </p>
+              <p className="text-zinc-600 font-mono text-xs uppercase tracking-widest">
+                Supported format: PDF (up to 50MB)
+              </p>
+            </div>
+          )}
         </div>
-      )}
 
-      {message && (
-        <div className={`mt-4 p-4 rounded ${message.startsWith('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
-          {message}
+        {message && (
+          <div className={`mt-8 p-4 border font-mono text-xs tracking-wide ${
+            message.includes('Success') || message.includes('Processing complete')
+              ? 'bg-zinc-900 border-zinc-700 text-zinc-300' 
+              : 'bg-red-950/20 border-red-900/50 text-red-400'
+          }`}>
+            {message}
+          </div>
+        )}
+
+        <div className="mt-8 flex justify-end">
+          <button 
+            onClick={handleUpload} 
+            disabled={!file || isUploading}
+            className="group relative inline-flex items-center justify-center px-8 py-4 text-xs font-mono tracking-widest uppercase transition-all duration-300 bg-zinc-100 text-black hover:bg-white disabled:bg-zinc-800 disabled:text-zinc-500 rounded-sm"
+          >
+            {isUploading ? 'UPLOADING...' : 'INITIATE UPLOAD'}
+          </button>
         </div>
-      )}
-
-      <div className="mt-8 flex justify-end">
-        <button
-          onClick={handleUpload}
-          disabled={!file || isUploading}
-          className={`px-6 py-2 rounded font-semibold text-white transition-colors ${
-            !file || isUploading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
-        >
-          {isUploading ? 'Uploading...' : 'Upload Document'}
-        </button>
       </div>
     </div>
   );

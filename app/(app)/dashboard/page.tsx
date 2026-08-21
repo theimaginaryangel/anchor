@@ -49,77 +49,71 @@ export default function DashboardPage() {
   };
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div className="space-y-12">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-zinc-800 pb-8">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-gray-600 mt-1">
-            Your documents and recent activity will appear here.
+          <h1 className="text-4xl font-light tracking-tighter text-zinc-100">Dashboard</h1>
+          <p className="text-zinc-500 mt-2 font-mono text-xs uppercase tracking-widest">
+            System Overview
           </p>
         </div>
         <button 
           onClick={handleProcess}
           disabled={isProcessing}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-bold shadow-lg transition-transform hover:scale-105 disabled:bg-gray-400 disabled:transform-none"
+          className="group relative inline-flex items-center justify-center px-6 py-3 text-xs font-mono tracking-widest uppercase transition-all duration-300 bg-zinc-100 text-black hover:bg-white disabled:bg-zinc-800 disabled:text-zinc-500 rounded-sm"
         >
-          {isProcessing ? '⚙️ Processing...' : '⚡ Process Pending Documents'}
+          {isProcessing ? 'Processing...' : 'Sync Documents'}
         </button>
       </div>
 
       {message && (
-        <div className="mb-6 p-4 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 font-medium">
+        <div className="p-4 border border-zinc-800 bg-zinc-900/50 text-zinc-300 font-mono text-xs tracking-wide">
           {message}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold mb-2">Documents</h2>
-          <p className="text-3xl font-bold text-blue-600">{documents.length}</p>
-          <p className="text-sm text-gray-500 mt-2">uploaded</p>
+      {/* Minimalist Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-zinc-800 border border-zinc-800">
+        <div className="bg-zinc-950 p-8">
+          <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest mb-4">Total Documents</p>
+          <p className="text-5xl font-light tracking-tighter text-zinc-100">{documents.length}</p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold mb-2">Questions Asked</h2>
-          <p className="text-3xl font-bold text-green-600">0</p>
-          <p className="text-sm text-gray-500 mt-2">total</p>
+        <div className="bg-zinc-950 p-8">
+          <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest mb-4">Queries Executed</p>
+          <p className="text-5xl font-light tracking-tighter text-zinc-100">0</p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-          <h2 className="text-lg font-semibold mb-2">Status</h2>
-          <p className="text-3xl font-bold text-purple-600">Ready</p>
-          <p className="text-sm text-gray-500 mt-2">system online</p>
+        <div className="bg-zinc-950 p-8">
+          <p className="text-zinc-500 font-mono text-xs uppercase tracking-widest mb-4">System Status</p>
+          <p className="text-5xl font-light tracking-tighter text-zinc-100">Online</p>
         </div>
       </div>
       
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h2 className="font-semibold text-gray-900">Uploaded Documents</h2>
+      {/* Minimalist List */}
+      <div className="border border-zinc-800">
+        <div className="px-8 py-4 border-b border-zinc-800 bg-zinc-900/30">
+          <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-400">Knowledge Base</h2>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-zinc-800 bg-zinc-950">
           {documents.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              No documents uploaded yet. Go to the Upload tab to get started.
+            <div className="p-12 text-center text-zinc-500 font-mono text-sm">
+              No documents currently indexed.
             </div>
           ) : (
             documents.map(doc => (
-              <div key={doc.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                    📄
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">{doc.filename}</h3>
-                    <p className="text-sm text-gray-500">
-                      Uploaded on {new Date(doc.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
+              <div key={doc.id} className="p-8 flex items-center justify-between hover:bg-zinc-900/50 transition-colors">
+                <div>
+                  <h3 className="font-light text-zinc-200 tracking-wide">{doc.filename}</h3>
+                  <p className="font-mono text-xs text-zinc-600 mt-2 uppercase tracking-wider">
+                    {new Date(doc.created_at).toLocaleDateString()}
+                  </p>
                 </div>
                 <div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
-                    doc.status === 'ready' ? 'bg-green-100 text-green-800' : 
-                    doc.status === 'processing' ? 'bg-yellow-100 text-yellow-800' : 
-                    'bg-red-100 text-red-800'
+                  <span className={`px-2 py-1 border text-[10px] font-mono uppercase tracking-widest ${
+                    doc.status === 'ready' ? 'border-zinc-700 text-zinc-300' : 
+                    doc.status === 'processing' ? 'border-zinc-600 text-zinc-400' : 
+                    'border-red-900/50 text-red-400'
                   }`}>
                     {doc.status}
                   </span>
