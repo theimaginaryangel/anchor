@@ -47,7 +47,11 @@ export default function UploadPage() {
         if (fileInput) fileInput.value = '';
         router.refresh();
       } else {
-        setMessage(`Error: ${data.error}`);
+        if (data.error === 'This file already exists') {
+          setMessage('This file already exists in the knowledge base. You can go straight to Chat!');
+        } else {
+          setMessage(`Error: ${data.error}`);
+        }
       }
     } catch (err) {
       setMessage('An error occurred while uploading.');
@@ -99,7 +103,7 @@ export default function UploadPage() {
 
         {message && (
           <div className={`mt-8 p-4 border font-mono text-xs tracking-wide ${
-            message.includes('Success') || message.includes('Processing complete')
+            message.includes('Success') || message.includes('Processing complete') || message.includes('already exists')
               ? 'bg-zinc-900 border-zinc-700 text-zinc-300' 
               : 'bg-red-950/20 border-red-900/50 text-red-400'
           }`}>

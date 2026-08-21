@@ -36,6 +36,18 @@ export async function POST(req: Request) {
 
     const userId = session.user?.email || 'unknown'; // Using email as user identifier for simplicity in demo
     const fileName = file.name;
+
+    // Check for duplicate file
+    const { data: existingDocs } = await supabase
+      .from('documents')
+      .select('id')
+      .eq('filename', fileName)
+      .limit(1);
+
+    if (existingDocs && existingDocs.length > 0) {
+      return NextResponse.json({ error: 'This file already exists' }, { status: 409 });
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
