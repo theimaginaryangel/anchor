@@ -57,11 +57,11 @@ export default function ChatPage() {
       } else {
         throw new Error(data.error);
       }
-    } catch (err) {
+    } catch (err: any) {
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error searching your documents.',
+        content: `Sorry, I encountered an error searching your documents:\n\n**${err.message}**\n\n*(If you are on Vercel, please double-check your Environment Variables are fully populated!)*`,
       }]);
     } finally {
       setIsLoading(false);

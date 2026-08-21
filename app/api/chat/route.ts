@@ -85,8 +85,10 @@ export async function POST(req: Request) {
       routing: routingTrace
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Chat API Error:', error);
-    return NextResponse.json({ error: 'Failed to generate answer' }, { status: 500 });
+    return NextResponse.json({ 
+      error: error.message || 'Failed to generate answer' 
+    }, { status: 500 });
   }
 }
