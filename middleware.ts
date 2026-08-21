@@ -18,7 +18,10 @@ export default auth((req) => {
   }
 });
 
-// Configure middleware to run on all paths except static files and next internals
 export const config = {
-  matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/dashboard/:path*',
+    '/upload/:path*',
+    '/chat/:path*'
+  ],
 };

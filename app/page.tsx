@@ -1,26 +1,48 @@
 import Link from 'next/link';
+import { auth } from '@/auth';
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-center font-mono text-sm flex flex-col">
-        <h1 className="text-6xl font-bold mb-4">Anchor</h1>
-        <p className="text-xl mb-8 text-center text-gray-600">
-          Ask questions about your documents. Get answers with citations.
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] text-zinc-100 p-8 selection:bg-zinc-800 selection:text-white">
+      <div className="max-w-3xl w-full flex flex-col items-center text-center space-y-12">
+        
+        {/* Minimalist Logo / Title */}
+        <div className="space-y-4 tracking-tighter">
+          <h1 className="text-5xl md:text-7xl font-light">
+            Anchor
+          </h1>
+          <div className="w-12 h-[1px] bg-zinc-700 mx-auto rounded-full"></div>
+        </div>
+
+        {/* Value Prop */}
+        <p className="text-zinc-400 text-lg md:text-xl font-light tracking-wide max-w-xl leading-relaxed">
+          Enterprise document intelligence. Extract, vectorize, and semantically query your scanned archives with exact citations.
         </p>
-        <div className="flex gap-4">
-          <Link
-            href="/login"
-            className="rounded-md bg-blue-600 px-6 py-3 text-white hover:bg-blue-700 font-semibold"
-          >
-            Sign In
-          </Link>
-          <a
-            href="#"
-            className="rounded-md bg-gray-200 px-6 py-3 text-gray-900 hover:bg-gray-300 font-semibold"
-          >
-            Learn More
-          </a>
+
+        {/* CTA */}
+        <div className="pt-8">
+          {session ? (
+            <Link
+              href="/dashboard"
+              className="group relative inline-flex items-center justify-center px-8 py-3 text-sm font-medium tracking-widest uppercase transition-all duration-300 bg-white text-black hover:bg-zinc-200 rounded-sm"
+            >
+              Enter Dashboard
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="group relative inline-flex items-center justify-center px-8 py-3 text-sm font-medium tracking-widest uppercase transition-all duration-300 border border-zinc-700 hover:bg-white hover:text-black rounded-sm"
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
+        
+        {/* Footer Credit */}
+        <div className="absolute bottom-12 text-xs font-mono text-zinc-600 tracking-widest uppercase">
+          Benny Asante Duah
         </div>
       </div>
     </main>

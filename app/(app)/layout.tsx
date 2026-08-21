@@ -16,7 +16,7 @@ export default async function AppLayout({
         </div>
         
         <nav className="flex flex-col gap-2 p-4 flex-grow">
-          <Link href="/" className="block p-2 rounded hover:bg-gray-800 transition-colors">
+          <Link href="/dashboard" className="block p-2 rounded hover:bg-gray-800 transition-colors">
             Dashboard
           </Link>
           <Link href="/upload" className="block p-2 rounded hover:bg-gray-800 transition-colors">

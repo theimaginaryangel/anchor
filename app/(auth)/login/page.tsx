@@ -11,7 +11,7 @@ export default function LoginPage() {
       <form
         action={async () => {
           "use server"
-          await signIn("microsoft-entra-id", { redirectTo: "/" })
+          await signIn("microsoft-entra-id", { redirectTo: "/dashboard" })
         }}
       >
         <button 
