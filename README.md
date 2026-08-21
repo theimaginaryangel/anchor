@@ -43,6 +43,10 @@ Building a robust multi-cloud architecture required solving several deep technic
    * **Challenge:** The initial RAG pipeline was a static "retrieve-then-generate" loop. If a user asked a conversational query (e.g., "Hello") or an ambiguous query (e.g., "What's the deadline?"), the system would blindly execute expensive vector embeddings and database searches, yielding poor results and wasting resources.
    * **Solution:** I inserted an "agentic routing" layer before retrieval. A fast LLM call analyzes the user's intent and outputs a structured decision: answer directly, ask for clarification, or generate a refined search query. If a search yields insufficient information, the router loops back for a second refined attempt (capped at two iterations to prevent infinite loops), drastically improving response accuracy and system efficiency.
 
+5. **Handling Free-Tier API Rate Limits in Production**
+   * **Challenge:** The Agentic Router's multi-step LLM pipeline fired multiple requests per user query. In production, this rapidly hit Google Gemini's free-tier rate limit (15 RPM), causing the API to throw `429 Too Many Requests` errors, which initially resulted in silent `500 Internal Server Errors` on the frontend.
+   * **Solution:** I implemented robust error interception within the Next.js API route to catch `GoogleGenerativeAI` specific errors, extract the rate limit message, and gracefully propagate the exact issue back to the client UI. This prevents silent crashes and informs the user exactly why the request failed, preparing the app for a smooth transition to a production billing tier.
+
 ## Architecture
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for detailed system diagrams and data flow.
@@ -78,7 +82,3 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for detailed system diagrams 
    npm run dev
    ```
    The app will be available at `http://localhost:3000`.
-
-## License
-
-MIT
