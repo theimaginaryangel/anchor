@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { canQuery } from '@/lib/auth/roles';
 import { searchDocuments } from '@/lib/retrieval/search';
 import { generateAnswer, routeQuery } from '@/lib/chat/gemini';
+import { isGeminiRateLimitError, RATE_LIMIT_USER_MESSAGE, getFriendlyErrorMessage } from '@/lib/errors';
 
 export async function POST(req: Request) {
   try {
@@ -67,7 +68,7 @@ export async function POST(req: Request) {
         const insufficientInfoFlag = "I don't have enough information";
         if (answer.answer.includes(insufficientInfoFlag) && attempts < MAX_ATTEMPTS) {
           // Let it loop back for one more try
-          continue;
+          continue; 
         }
 
         // Success (or max attempts reached with insufficient info)
@@ -87,8 +88,18 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('Chat API Error:', error);
+
+    if (isGeminiRateLimitError(error)) {
+      return NextResponse.json({ 
+        error: RATE_LIMIT_USER_MESSAGE,
+        code: 'RATE_LIMIT_EXCEEDED'
+      }, { status: 429 });
+    }
+
+    const safeMessage = getFriendlyErrorMessage(error);
+
     return NextResponse.json({ 
-      error: error.message || 'Failed to generate answer' 
+      error: safeMessage
     }, { status: 500 });
   }
 }

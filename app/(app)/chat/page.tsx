@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-
 import ReactMarkdown from 'react-markdown';
+import { isGeminiRateLimitError, getFriendlyErrorMessage } from '@/lib/errors';
 
 type Message = {
   id: string;
@@ -44,25 +44,62 @@ export default function ChatPage() {
         body: JSON.stringify({ question: userMsg.content })
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
       
       if (res.ok) {
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: data.answer,
-          citations: data.citations,
-          routing: data.routing
+          content: data?.answer || '',
+          citations: data?.citations,
+          routing: data?.routing
         }]);
       } else {
-        throw new Error(data.error);
+        if (
+          res.status === 429 ||
+          data?.code === 'RATE_LIMIT_EXCEEDED' ||
+          isGeminiRateLimitError(data) ||
+          isGeminiRateLimitError(data?.error)
+        ) {
+          const friendlyMessage = (data && isGeminiRateLimitError(data.error || data))
+            ? getFriendlyErrorMessage(data.error || data)
+            : getFriendlyErrorMessage(429);
+          setMessages(prev => [...prev, {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: `⏳ **Rate Limit Exceeded**\n\n${friendlyMessage}`,
+          }]);
+          return;
+        }
+
+        const friendlyMessage = getFriendlyErrorMessage(data?.error || data || 'Failed to generate answer');
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `Sorry, I encountered an error searching your documents:\n\n**${friendlyMessage}**\n\n*(If you are on Vercel, please double-check your Environment Variables are fully populated!)*`,
+        }]);
       }
     } catch (err: any) {
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: `Sorry, I encountered an error searching your documents:\n\n**${err.message}**\n\n*(If you are on Vercel, please double-check your Environment Variables are fully populated!)*`,
-      }]);
+      if (isGeminiRateLimitError(err)) {
+        const friendlyMessage = getFriendlyErrorMessage(err);
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `⏳ **Rate Limit Exceeded**\n\n${friendlyMessage}`,
+        }]);
+      } else {
+        const friendlyMessage = getFriendlyErrorMessage(err);
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `Sorry, I encountered an error searching your documents:\n\n**${friendlyMessage}**\n\n*(If you are on Vercel, please double-check your Environment Variables are fully populated!)*`,
+        }]);
+      }
     } finally {
       setIsLoading(false);
     }

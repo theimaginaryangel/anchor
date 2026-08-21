@@ -13,6 +13,7 @@
  */
 
 import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
+export { isGeminiRateLimitError, RATE_LIMIT_USER_MESSAGE, getFriendlyErrorMessage, isRawJsonError } from '@/lib/errors';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
