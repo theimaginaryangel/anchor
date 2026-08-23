@@ -215,3 +215,13 @@ export const chatRateLimiter = new RateLimiter({
   windowMs: DEFAULT_CHAT_WINDOW_MS,
   maxEntries: 10000,
 });
+
+const DEFAULT_UPLOAD_MAX = Number(process.env.UPLOAD_RATE_LIMIT_MAX) || 5;
+const DEFAULT_UPLOAD_WINDOW_MS = Number(process.env.UPLOAD_RATE_LIMIT_WINDOW_MS) || 60 * 60 * 1000;
+
+export const uploadRateLimiter = new RateLimiter({
+  maxRequests: DEFAULT_UPLOAD_MAX,
+  windowMs: DEFAULT_UPLOAD_WINDOW_MS,
+  maxEntries: 5000,
+});
+

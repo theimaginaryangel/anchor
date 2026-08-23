@@ -4,6 +4,10 @@ import { canUpload } from '@/lib/auth/roles';
 import { uploadDocumentToS3 } from '@/lib/storage/s3';
 import { startTextractJob } from '@/lib/ocr/textract';
 import { supabase } from '@/lib/supabase';
+import { uploadRateLimiter, getClientIp } from '@/lib/ratelimit';
+
+// Max file size: 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 /**
  * POST /api/upload
@@ -12,6 +16,22 @@ import { supabase } from '@/lib/supabase';
  */
 export async function POST(req: Request) {
   try {
+    // 1. IP Rate Limiting Check (prevent upload spam / DoS)
+    const ip = getClientIp(req);
+    const rateLimit = uploadRateLimiter.check(ip);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        { error: 'Upload rate limit exceeded. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.retryAfterSeconds),
+          }
+        }
+      );
+    }
+
     const session = await auth();
     
     if (!session) {
@@ -34,6 +54,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Only PDF files are supported' }, { status: 400 });
     }
 
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      return NextResponse.json({ error: 'File must have a .pdf extension' }, { status: 400 });
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'File size exceeds the 10MB limit' }, { status: 413 });
+    }
+
     const userId = session.user?.email || 'unknown'; // Using email as user identifier for simplicity in demo
     const fileName = file.name;
 
@@ -50,6 +78,11 @@ export async function POST(req: Request) {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    // Magic number validation for PDF (ensure it starts with %PDF-)
+    if (buffer.length < 5 || buffer.toString('utf-8', 0, 5) !== '%PDF-') {
+      return NextResponse.json({ error: 'Invalid file signature. Only genuine PDF files are allowed.' }, { status: 415 });
+    }
 
     // 1. Upload to S3
     const s3Key = await uploadDocumentToS3(buffer, fileName, userId);
