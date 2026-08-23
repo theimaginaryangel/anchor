@@ -45,7 +45,7 @@ Building a robust multi-cloud architecture required solving several deep technic
 
 5. **Handling Free-Tier API Rate Limits in Production**
    * **Challenge:** The Agentic Router's multi-step LLM pipeline fired multiple requests per user query. In production, this rapidly hit Google Gemini's free-tier rate limit (15 RPM), causing the API to throw `429 Too Many Requests` errors, which initially resulted in silent `500 Internal Server Errors` on the frontend.
-   * **Solution:** I implemented robust error interception within the Next.js API route to catch `GoogleGenerativeAI` specific errors, extract the rate limit message, and gracefully propagate the exact issue back to the client UI. This prevents silent crashes and informs the user exactly why the request failed, preparing the app for a smooth transition to a production billing tier.
+   * **Solution:** I implemented robust error interception within the Next.js API route to catch `GoogleGenerativeAI` specific errors, extract the rate limit message, and gracefully propagate the exact issue back to the client UI. Furthermore, to protect the API quota from malicious spam or runaway scripts, I built a custom in-memory sliding-window IP rate limiter. It correctly parses proxy headers (`x-forwarded-for`) and instantly rejects abusive traffic with an HTTP 429 status before it ever reaches the Gemini API, ensuring the strict free-tier quota is preserved for legitimate users.
 
 ## Architecture
 
