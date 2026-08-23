@@ -3,6 +3,7 @@ import { POST } from '@/app/api/chat/route';
 import { auth } from '@/auth';
 import { routeQuery, generateAnswer } from '@/lib/chat/gemini';
 import { searchDocuments } from '@/lib/retrieval/search';
+import { chatRateLimiter } from '@/lib/ratelimit';
 
 vi.mock('@/auth', () => ({
   auth: vi.fn(),
@@ -24,6 +25,7 @@ vi.mock('@/lib/retrieval/search', () => ({
 describe('Chat API Router', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    chatRateLimiter.reset();
     (auth as any).mockResolvedValue({ user: { role: 'admin' } });
   });
 

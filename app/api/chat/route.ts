@@ -4,10 +4,33 @@ import { canQuery } from '@/lib/auth/roles';
 import { searchDocuments } from '@/lib/retrieval/search';
 import { generateAnswer, routeQuery } from '@/lib/chat/gemini';
 import { isGeminiRateLimitError, RATE_LIMIT_USER_MESSAGE, getFriendlyErrorMessage } from '@/lib/errors';
+import { chatRateLimiter, getClientIp } from '@/lib/ratelimit';
 
 export async function POST(req: Request) {
   try {
-    // Auth check
+    // 1. IP Rate Limiting Check (prevent spamming Gemini API)
+    const ip = getClientIp(req);
+    const rateLimit = chatRateLimiter.check(ip);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: RATE_LIMIT_USER_MESSAGE,
+          code: 'RATE_LIMIT_EXCEEDED',
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.retryAfterSeconds),
+            'X-RateLimit-Limit': String(rateLimit.limit),
+            'X-RateLimit-Remaining': String(rateLimit.remaining),
+            'X-RateLimit-Reset': String(Math.ceil(rateLimit.resetTime / 1000)),
+          },
+        }
+      );
+    }
+
+    // 2. Auth check
     const session = await auth();
     if (!session || !canQuery((session?.user as any)?.role)) {
       return NextResponse.json({ error: 'Not authorized to query documents' }, { status: 403 });
