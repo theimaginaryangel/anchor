@@ -1,0 +1,1 @@
+import { routeQuery } from './lib/chat/gemini'; async function run() { try { const res = await routeQuery('who is benny'); console.log(res); } catch (e: any) { console.error('ERROR:', e.message); } } run();

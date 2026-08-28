@@ -1,0 +1,14 @@
+# Open Issues Ledger
+
+- [Implementer 1] Unverified aspect: Live production traffic hitting Google Gemini rate limits against real Google Cloud billing quotas (simulated accurately via mocked GoogleGenerativeAIFetchError and 429 HTTP status responses).
+- [Implementer 1] Known issue: Minor Robustness Risk — If Gemini API introduces an entirely new, undocumented error status format in a future major SDK update that omits status 429, errorDetails, and standard quota keywords, it would fall back to the sanitized 500 error handler rather than the 429 handler.
+- [Implementer 1] Untested edge cases & next step: Reviewers should test streaming / chunked response error abort scenarios if the chat architecture transitions to server-sent events or streaming responses in the future.
+- [Reviewer 1] Unverified aspect: Real Google Cloud production billing exhaustion against live Gemini API endpoints (verified via high-fidelity simulated SDK payloads, HTTP 429 responses, and nested JSON error bodies).
+- [Reviewer 1] Known issue: Minor Robustness Risk — If a third-party proxy returns an HTTP 500 with an unstructured, non-JSON plain text error that neither mentions rate limit keywords nor contains JSON, it will be displayed as that plain text error rather than the rate limit message.
+- [Reviewer 1] Remaining risk & next step: The Gemini 429 rate limit error handling is robust, tested against adversarial inputs, and ready for production. All requirements in the task specification are completely fulfilled.
+- [Reviewer 2] Unverified aspect: Live production quota exhaustion against physical Google Cloud billing accounts (simulated through comprehensive SDK fetch error fixtures and HTTP status codes).
+- [Reviewer 2] Known issue: Minor Robustness Risk — If an upstream proxy returns HTTP 500 with completely blank body or unstructured plain text without mentioning rate limit keywords or containing JSON, it falls back to the generic 500 error display rather than rate limit banner.
+- [Reviewer 2] Remaining risk & next step: All requirements are completely satisfied with extensive unit and UI integration testing. The implementation is production ready.
+- [Reviewer 3] Unverified aspect: Live production quota exhaustion against physical Google Cloud billing accounts (simulated through comprehensive SDK fetch error fixtures, gRPC status objects, and HTTP status codes).
+- [Reviewer 3] Known issue: Minor Robustness Risk — If an upstream proxy returns an HTTP 500 status with an unstructured, non-JSON plain text error that contains no rate limit keywords or quota references, it will be displayed as that plain text error rather than the rate limit banner.
+- [Reviewer 3] Remaining risk & next step: All task requirements are completely satisfied and verified through programmatic unit and UI integration tests. The code is robust, fully typed, and ready for production.

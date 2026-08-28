@@ -1,0 +1,1 @@
+import { embedText } from './lib/embeddings/gemini'; async function run() { try { const res = await embedText('who is benny'); console.log(res.length); } catch (e: any) { console.error('ERROR:', e.message); } } run();

@@ -6,6 +6,19 @@ import { generateAnswer, routeQuery } from '@/lib/chat/gemini';
 import { isGeminiRateLimitError, RATE_LIMIT_USER_MESSAGE, getFriendlyErrorMessage } from '@/lib/errors';
 import { chatRateLimiter, getClientIp } from '@/lib/ratelimit';
 
+function sanitizeInput(str: string): string {
+  if (typeof str !== 'string') return '';
+  // Strip control characters except newline and tab
+  return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim();
+}
+
+function sanitizeOutput(str: string): string {
+  if (typeof str !== 'string') return '';
+  // Basic XSS mitigation: strip dangerous tags and inline event handlers
+  return str.replace(/<(script|iframe|object|embed|applet)[^>]*>[\s\S]*?<\/\1>/gi, '')
+            .replace(/on\w+\s*=/gi, 'data-blocked=');
+}
+
 export async function POST(req: Request) {
   try {
     // 1. IP Rate Limiting Check (prevent spamming Gemini API)
@@ -36,10 +49,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Not authorized to query documents' }, { status: 403 });
     }
 
-    const { question, documentId } = await req.json();
+    let { question, documentId } = await req.json();
 
-    if (!question) {
+    if (!question || typeof question !== 'string') {
       return NextResponse.json({ error: 'Question is required' }, { status: 400 });
+    }
+
+    question = sanitizeInput(question);
+    if (question.length > 2000) {
+      return NextResponse.json({ error: 'Question exceeds maximum length of 2000 characters' }, { status: 413 });
+    }
+
+    if (documentId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(documentId)) {
+      return NextResponse.json({ error: 'Invalid document ID format' }, { status: 400 });
     }
 
     // Routing Loop (cap at 2 iterations total = 1 initial + 1 re-search)
@@ -59,7 +81,7 @@ export async function POST(req: Request) {
 
       if (decision.action === 'ask_clarification' || decision.action === 'answer_directly') {
         return NextResponse.json({
-          answer: decision.response_text,
+          answer: sanitizeOutput(decision.response_text),
           citations: [],
           routing: routingTrace
         });
@@ -97,6 +119,7 @@ export async function POST(req: Request) {
         // Success (or max attempts reached with insufficient info)
         return NextResponse.json({
           ...answer,
+          answer: sanitizeOutput(answer.answer),
           routing: routingTrace
         });
       }
