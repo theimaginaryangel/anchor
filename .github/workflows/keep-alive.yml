@@ -1,0 +1,38 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Run at 00:00 every Monday, Wednesday, and Friday
+    - cron: '0 0 * * 1,3,5'
+  workflow_dispatch: # Allow manual triggering from the GitHub UI
+
+jobs:
+  ping-supabase:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Send keep-alive ping to Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "Error: NEXT_PUBLIC_SUPABASE_URL secret is not set."
+            exit 1
+          fi
+          
+          echo "Pinging Supabase at $SUPABASE_URL..."
+          
+          # We hit the health endpoint or root REST endpoint. 
+          # Even if it returns 401 or 404, the request registers on Supabase's API gateway 
+          # and counts as "activity", preventing the 7-day auto-pause on the free tier.
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SUPABASE_URL/rest/v1/")
+          
+          echo "Supabase responded with HTTP Status: $HTTP_STATUS"
+          
+          if [ "$HTTP_STATUS" -eq 000 ]; then
+            echo "Failed to connect to Supabase."
+            exit 1
+          fi
+          
+          echo "Keep-alive ping successful!"
