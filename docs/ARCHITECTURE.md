@@ -21,7 +21,7 @@ graph TD
     %% External Services
     Textract[AWS Textract]
     GeminiEmbed[Gemini Embeddings]
-    GeminiChat[Gemini 3.5 Flash]
+    GeminiChat[Gemini 3.7 Flash]
 
     %% Authentication Flow
     User -->|Logs in| EntraID
@@ -90,7 +90,7 @@ When a user asks a question, the system uses an agentic routing step before grou
 2. **Query Vectorization:** If searching, the refined query is converted into a 768-dimension vector using the Gemini embedding model.
 3. **Semantic Search:** A PostgreSQL RPC function (`match_chunks`) executes a cosine-similarity search against the `pgvector` index, returning the 5 most mathematically similar document chunks.
 4. **Prompt Construction:** The retrieved chunks are injected into a strict system prompt, instructing the LLM to answer the question using *only* the provided context.
-5. **Generation & Loop Cap:** Google Gemini 3.5 Flash generates a natural language response containing bracketed citations. If the model determines it lacks sufficient information, the system loops back to the router for a second attempt (capped at a maximum of 2 iterations to prevent infinite re-search loops).
+5. **Generation & Loop Cap:** Google Gemini 3.7 Flash generates a natural language response containing bracketed citations. If the model determines it lacks sufficient information, the system loops back to the router for a second attempt (capped at a maximum of 2 iterations to prevent infinite re-search loops).
 
 ## Infrastructure
 All infrastructure is declared as code using **Terraform**. A GitHub Actions CI/CD pipeline validates formatting, runs type checks, executes `terraform apply`, and automatically merges successful deployments into the `main` branch.

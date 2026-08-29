@@ -42,7 +42,7 @@ export default async function Home() {
           </div>
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-            Google Gemini 3.5
+            Google Gemini 3.7
           </div>
         </div>
 

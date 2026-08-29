@@ -9,7 +9,7 @@ Anchor allows authenticated users to upload scanned PDFs, automatically extracts
 - **Enterprise OCR:** Uses AWS Textract to accurately parse text from complex, multi-page scanned PDFs.
 - **Semantic Search:** Text is chunked and embedded into a `pgvector` database using Gemini's 768-dimension embedding models.
 - **Agentic Query Routing:** The RAG pipeline employs a smart router that evaluates user intent before database retrieval, capable of answering meta-queries directly, asking for clarification, or refining search terms.
-- **Retrieval-Augmented Generation (RAG):** User queries run a cosine-similarity search against the database. The top results are fed to Gemini 3.5 Flash to generate accurate, cited answers.
+- **Retrieval-Augmented Generation (RAG):** User queries run a cosine-similarity search against the database. The top results are fed to Gemini 3.7 Flash to generate accurate, cited answers.
 - **Secure Access:** Protected by Microsoft Entra ID (NextAuth v5), restricting upload and query access based on organizational roles.
 - **Infrastructure as Code:** Fully managed by Terraform and deployed automatically via GitHub Actions CI/CD.
 
@@ -18,7 +18,7 @@ Anchor allows authenticated users to upload scanned PDFs, automatically extracts
 - **Frontend:** Next.js 14 (App Router), React, Tailwind CSS
 - **Backend:** Next.js API Routes, Node.js
 - **Database:** Supabase (PostgreSQL + pgvector)
-- **AI / ML:** AWS Textract (OCR), Google Gemini 3.5 (LLM + Embeddings)
+- **AI / ML:** AWS Textract (OCR), Google Gemini 3.7 (LLM + Embeddings)
 - **Storage:** AWS S3
 - **Auth:** NextAuth.js v5 (Microsoft Entra ID)
 - **Infrastructure:** Terraform, GitHub Actions

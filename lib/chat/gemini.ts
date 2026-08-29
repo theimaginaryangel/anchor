@@ -27,7 +27,7 @@ export async function routeQuery(
   question: string,
   previousAttempts: string[] = []
 ): Promise<RouteDecision> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.7-flash' });
 
   const routingSchema: Schema = {
     type: SchemaType.OBJECT,
@@ -99,7 +99,7 @@ export async function generateAnswer(
   question: string,
   chunks: Array<{ id: string; content: string; pageNumber: number; sectionHeading: string | null }>
 ): Promise<CitedAnswer> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.7-flash' });
 
   // 1. Format the chunks into a context string
   let contextText = '';

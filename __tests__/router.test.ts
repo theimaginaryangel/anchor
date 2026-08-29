@@ -116,7 +116,7 @@ describe('Chat API Router', () => {
 
   it('handles Gemini 429 rate limit error in routeQuery gracefully without returning raw JSON', async () => {
     const raw429Error = new Error(
-      '[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent: [429 Too Many Requests] Resource has been exhausted (e.g. check quota). [{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"RATE_LIMIT_EXCEEDED","domain":"googleapis.com"}]'
+      '[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent: [429 Too Many Requests] Resource has been exhausted (e.g. check quota). [{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"RATE_LIMIT_EXCEEDED","domain":"googleapis.com"}]'
     );
     (raw429Error as any).status = 429;
     (raw429Error as any).statusText = 'Too Many Requests';

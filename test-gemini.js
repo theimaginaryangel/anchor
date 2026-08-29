@@ -3,7 +3,7 @@ const { GoogleGenerativeAI, Type } = require('@google/generative-ai');
 
 async function test() {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.7-flash' });
   
   const routingSchema = {
     type: Type.OBJECT,

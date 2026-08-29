@@ -124,7 +124,7 @@ describe('Error Handling Utilities', () => {
     it('detects rate limit keywords in error message string including hyphenated and underscored forms', () => {
       expect(
         isGeminiRateLimitError(
-          new Error('[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent: [429 Too Many Requests] Resource has been exhausted (e.g. check quota).')
+          new Error('[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent: [429 Too Many Requests] Resource has been exhausted (e.g. check quota).')
         )
       ).toBe(true);
 

@@ -24,7 +24,7 @@ describe('ChatPage UI - Gemini 429 Rate Limit Handling', () => {
       }
     ]);
 
-    const rawErrorMessage = `[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent: [429 Too Many Requests] Resource has been exhausted (e.g. check quota). ${rawJsonError}`;
+    const rawErrorMessage = `[GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent: [429 Too Many Requests] Resource has been exhausted (e.g. check quota). ${rawJsonError}`;
 
     // Mock fetch returning HTTP 429 with standard rate limit payload
     global.fetch = vi.fn().mockResolvedValue({
