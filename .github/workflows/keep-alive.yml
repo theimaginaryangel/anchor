@@ -15,23 +15,26 @@ jobs:
       - name: Send keep-alive ping to Supabase REST API
         env:
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          if [ -z "$SUPABASE_URL" ]; then
-            echo "Error: NEXT_PUBLIC_SUPABASE_URL secret is not set."
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "Error: Supabase secrets are not set."
             exit 1
           fi
           
           echo "Pinging Supabase at $SUPABASE_URL..."
           
-          # We hit the health endpoint or root REST endpoint. 
-          # Even if it returns 401 or 404, the request registers on Supabase's API gateway 
-          # and counts as "activity", preventing the 7-day auto-pause on the free tier.
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SUPABASE_URL/rest/v1/")
+          # We perform an authenticated request to a real table (documents) with limit=1
+          # This forces a true database read via PostgREST, guaranteeing that Supabase 
+          # registers the activity and resets the 7-day auto-pause timer.
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$SUPABASE_URL/rest/v1/documents?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY")
           
           echo "Supabase responded with HTTP Status: $HTTP_STATUS"
           
-          if [ "$HTTP_STATUS" -eq 000 ]; then
-            echo "Failed to connect to Supabase."
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Failed to query database. Expected HTTP 200, got $HTTP_STATUS"
             exit 1
           fi
           
