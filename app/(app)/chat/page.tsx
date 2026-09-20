@@ -81,7 +81,7 @@ export default function ChatPage() {
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: `Sorry, I encountered an error searching your documents:\n\n**${friendlyMessage}**\n\n*(If you are on Vercel, please double-check your Environment Variables are fully populated!)*`,
+          content: `Sorry, I encountered an error searching your documents:\n\n**${friendlyMessage}**`,
         }]);
       }
     } catch (err: any) {
@@ -97,7 +97,7 @@ export default function ChatPage() {
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: `Sorry, I encountered an error searching your documents:\n\n**${friendlyMessage}**\n\n*(If you are on Vercel, please double-check your Environment Variables are fully populated!)*`,
+          content: `Sorry, I encountered an error searching your documents:\n\n**${friendlyMessage}**`,
         }]);
       }
     } finally {
