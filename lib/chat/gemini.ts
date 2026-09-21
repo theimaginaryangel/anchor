@@ -1,21 +1,8 @@
-/**
- * Gemini Chat Client
- *
- * Takes a user's question and the retrieved chunks, sends them to
- * Google's Gemini API, and gets back an answer that cites its sources.
- * The system prompt tells Gemini to only answer from the provided
- * chunks and to say "I don't have enough information" if the chunks
- * don't cover the question.
- *
- * Implemented in Phase 5.
- *
- * Dependencies: @google/generative-ai
- */
-
-import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 export { isGeminiRateLimitError, RATE_LIMIT_USER_MESSAGE, getFriendlyErrorMessage, isRawJsonError } from '@/lib/errors';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || '' });
+const MODEL = 'openai/gpt-oss-120b';
 
 export interface RouteDecision {
   action: 'search_document' | 'ask_clarification' | 'answer_directly';
@@ -27,27 +14,6 @@ export async function routeQuery(
   question: string,
   previousAttempts: string[] = []
 ): Promise<RouteDecision> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.7-flash' });
-
-  const routingSchema: Schema = {
-    type: SchemaType.OBJECT,
-    properties: {
-      action: {
-        type: SchemaType.STRING,
-        description: "Must be exactly one of: 'search_document', 'ask_clarification', or 'answer_directly'."
-      },
-      reasoning: {
-        type: SchemaType.STRING,
-        description: "The rationale for choosing this action."
-      },
-      response_text: {
-        type: SchemaType.STRING,
-        description: "If action is 'search_document', this is the optimized search query to use. If action is 'ask_clarification', this is the question to ask the user. If action is 'answer_directly', this is the final answer to the user."
-      }
-    },
-    required: ["action", "reasoning", "response_text"]
-  };
-
   const historyContext = previousAttempts.length > 0 
     ? `\nPREVIOUS FAILED SEARCH ATTEMPTS:\n${previousAttempts.map((a, i) => `${i+1}. "${a}" (yielded no relevant information)`).join('\n')}\nSince previous searches failed, you MUST either try a significantly different search query, ask for clarification, or answer directly if appropriate.`
     : '';
@@ -65,25 +31,34 @@ You must decide the best action to take:
 2. 'ask_clarification': The query is ambiguous or underspecified (e.g. "what is the deadline" when there might be multiple). Ask a clarifying question as the 'response_text'.
 3. 'answer_directly': The query is conversational, meta, or a greeting (e.g. "hi", "what can you do", "thanks") that does NOT require document search. Answer it directly as the 'response_text'.
 
+Provide your response in JSON format matching this schema:
+{
+  "action": "search_document | ask_clarification | answer_directly",
+  "reasoning": "string",
+  "response_text": "string"
+}
+
 ${historyContext}
 
 <user_query>
 ${question}
-</user_query>
-`;
+</user_query>`;
 
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema: routingSchema,
-    }
+  const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    model: MODEL,
+    temperature: 0.1,
+    response_format: { type: "json_object" }
   });
 
-  const responseText = result.response.text();
+  const responseText = completion.choices[0]?.message?.content || '{}';
   return JSON.parse(responseText) as RouteDecision;
 }
-
 
 export interface CitedAnswer {
   answer: string;
@@ -99,16 +74,12 @@ export async function generateAnswer(
   question: string,
   chunks: Array<{ id: string; content: string; pageNumber: number; sectionHeading: string | null }>
 ): Promise<CitedAnswer> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.7-flash' });
-
-  // 1. Format the chunks into a context string
   let contextText = '';
   chunks.forEach((chunk, index) => {
     contextText += `\n\n--- Source [${index + 1}] (Page ${chunk.pageNumber}) ---\n`;
     contextText += chunk.content;
   });
 
-  // 2. Build the system prompt
   const prompt = `You are a helpful assistant for a document Q&A application called Anchor.
 I will provide you with several extracted text chunks from the user's uploaded documents.
 Your task is to answer the user's question USING ONLY the provided document chunks.
@@ -133,11 +104,19 @@ ${question}
 
 ANSWER:`;
 
-  // 3. Call Gemini
-  const result = await model.generateContent(prompt);
-  const answerText = result.response.text();
+  const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    model: MODEL,
+    temperature: 0.1
+  });
 
-  // 4. Map the citations back to the chunks
+  const answerText = completion.choices[0]?.message?.content || "I couldn't generate an answer.";
+
   const citations = chunks.map(c => ({
     chunkId: c.id,
     pageNumber: c.pageNumber,
