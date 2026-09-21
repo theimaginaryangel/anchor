@@ -2,7 +2,7 @@ import Groq from 'groq-sdk';
 export { isGeminiRateLimitError, RATE_LIMIT_USER_MESSAGE, getFriendlyErrorMessage, isRawJsonError } from '@/lib/errors';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || '' });
-const MODEL = 'openai/gpt-oss-120b';
+const MODEL = 'qwen/qwen3.8-27b';
 
 export interface RouteDecision {
   action: 'search_document' | 'ask_clarification' | 'answer_directly';
